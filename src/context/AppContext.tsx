@@ -154,7 +154,7 @@ const MOCK_USERS: User[] = [
   { id: 'V3', name: 'RecycleFirst India', role: 'vendor', email: 'ops@recyclefirst.in', status: 'active', phone: '+91 54321 09876', registeredAt: '2026-04-01T10:00:00.000Z', onboardingStep: 5 },
   { id: 'V4', name: 'PureRecovery Solutions', role: 'vendor', email: 'contact@purerecovery.com', status: 'pending', phone: '+91 43210 98765', registeredAt: '2026-04-14T10:00:00.000Z', onboardingStep: 4 },
   { id: 'V5', name: 'Urban Miners', role: 'vendor', email: 'hello@urbanminers.com', status: 'pending', phone: '+91 32109 87654', registeredAt: '2026-04-15T10:00:00.000Z', onboardingStep: 2 },
-  { id: 'G1', name: 'Individual User', role: 'user', email: 'guest@weconnect.com', status: 'active', registeredAt: '2026-04-16T13:00:00.000Z' },
+  { id: 'G1', name: 'Individual User', role: 'guest', email: 'guest@weconnect.com', status: 'active', registeredAt: '2026-04-16T13:00:00.000Z' },
 ];
 
 const MOCK_NOTIFICATIONS: Notification[] = [

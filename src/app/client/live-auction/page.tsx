@@ -1,11 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
 import { useApp } from "@/context/AppContext";
 import LiveAuctionEmbed from "@/components/auction/LiveAuctionEmbed";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function ClientLiveAuctionPage() {
+function ClientLiveAuctionPageContent() {
   const { listings } = useApp();
   const searchParams = useSearchParams();
   const listingId = searchParams.get("id");
@@ -51,5 +52,13 @@ export default function ClientLiveAuctionPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ClientLiveAuctionPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F5F7FA]"><div className="w-8 h-8 border-4 border-[#1E8E3E] border-t-transparent rounded-full animate-spin"></div></div>}>
+      <ClientLiveAuctionPageContent />
+    </Suspense>
   );
 }

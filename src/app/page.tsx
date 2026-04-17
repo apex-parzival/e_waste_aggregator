@@ -8,7 +8,7 @@ import { UserRole } from "@/types";
 
 type AuthTab = "login" | "register";
 
-export default function LandingPage() {
+function LandingPageContent() {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -579,5 +579,13 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function LandingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F5F7FA] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#1E8E3E] border-t-transparent rounded-full animate-spin"></div></div>}>
+      <LandingPageContent />
+    </Suspense>
   );
 }

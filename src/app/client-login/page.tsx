@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 type AuthTab = "login" | "register";
 
-export default function ClientLoginPage() {
+function ClientLoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useApp();
@@ -222,5 +222,13 @@ export default function ClientLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ClientLoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F5F7FA]"><div className="w-8 h-8 border-4 border-[#1E8E3E] border-t-transparent rounded-full animate-spin"></div></div>}>
+      <ClientLoginPageContent />
+    </Suspense>
   );
 }

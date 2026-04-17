@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 type AuthTab = "login" | "register";
 
-export default function UserLoginPage() {
+function UserLoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login } = useApp();
@@ -39,7 +39,7 @@ export default function UserLoginPage() {
     setError("");
     setLoading(true);
     await new Promise(r => setTimeout(r, 800));
-    login("user", loginEmail);
+    login("guest", loginEmail);
     router.push("/consumer/pickup");
     setLoading(false);
   };
@@ -53,7 +53,7 @@ export default function UserLoginPage() {
     }
     setLoading(true);
     await new Promise(r => setTimeout(r, 800));
-    login("user", regEmail);
+    login("guest", regEmail);
     router.push("/consumer/pickup");
     setLoading(false);
   };
@@ -217,5 +217,12 @@ export default function UserLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+export default function UserLoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#F5F7FA]"><div className="w-8 h-8 border-4 border-[#FFC107] border-t-transparent rounded-full animate-spin"></div></div>}>
+      <UserLoginPageContent />
+    </Suspense>
   );
 }
