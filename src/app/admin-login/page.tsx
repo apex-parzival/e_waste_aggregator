@@ -45,6 +45,11 @@ export default function AdminLoginPage() {
     setLoading(false);
   };
 
+  const quickDemo = () => {
+    setLoginEmail("admin@weconnect.com");
+    setLoginPassword("password");
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-[#F5F7FA]">
       {/* Brand Background Elements */}
@@ -62,7 +67,10 @@ export default function AdminLoginPage() {
             <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
               <span className="material-symbols-outlined text-slate-500 text-sm">shield_lock</span>
             </div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Administrative Control</p>
+            <div className="flex flex-col">
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-none">Administrative Control</p>
+              <button onClick={quickDemo} className="text-[10px] font-black text-[#0B5ED7] uppercase tracking-widest hover:underline text-left mt-1">Quick Demo Login</button>
+            </div>
           </div>
           <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />

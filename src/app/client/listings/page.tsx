@@ -50,7 +50,9 @@ export default function ClientListings() {
            weight: Number(editForm.weight), 
            basePrice: Number(editForm.basePrice), 
            bidIncrement: Number(editForm.bidIncrement),
-           description: editForm.description
+           description: editForm.description,
+           status: 'pending',
+           adminStatus: 'pending'
         });
      }
      setIsEditing(false);

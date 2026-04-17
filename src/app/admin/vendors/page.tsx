@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { formatDate } from "@/utils/format";
+import DecisionModal from "@/components/admin/DecisionModal";
 
 export default function AdminVendors() {
   const { users, updateUserStatus } = useApp();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending" | "rejected">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending" | "rejected" | "on-hold">("all");
   const [selectedVendor, setSelectedVendor] = useState<string | null>(null);
+  const [decisionModal, setDecisionModal] = useState<{ isOpen: boolean; vendorId: string | null }>({ isOpen: false, vendorId: null });
 
   const vendors = users.filter(u => u.role === "vendor");
   const stats = {
@@ -124,15 +126,9 @@ export default function AdminVendors() {
                       <span className="material-symbols-outlined text-lg">visibility</span>
                     </button>
                     {vendor.status !== "active" && (
-                      <button onClick={() => updateUserStatus(vendor.id, "active")}
-                        className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all" title="Approve">
-                        <span className="material-symbols-outlined text-lg">check_circle</span>
-                      </button>
-                    )}
-                    {vendor.status !== "rejected" && (
-                      <button onClick={() => updateUserStatus(vendor.id, "rejected")}
-                        className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all" title="Reject">
-                        <span className="material-symbols-outlined text-lg">block</span>
+                      <button onClick={() => setDecisionModal({ isOpen: true, vendorId: vendor.id })}
+                        className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all" title="Review Vendor">
+                        <span className="material-symbols-outlined text-lg">fact_check</span>
                       </button>
                     )}
                   </div>
@@ -234,6 +230,31 @@ export default function AdminVendors() {
             </div>
           </div>
         </div>
+      )}
+      )}
+
+      {/* Decision Modal */}
+      {decisionModal.vendorId && (
+        <DecisionModal
+          isOpen={decisionModal.isOpen}
+          onClose={() => setDecisionModal({ isOpen: false, vendorId: null })}
+          title="Vendor Application Decision"
+          itemDetails={[
+            { label: "Company", value: users.find(u => u.id === decisionModal.vendorId)?.name || "" },
+            { label: "Email", value: users.find(u => u.id === decisionModal.vendorId)?.email || "" }
+          ]}
+          onConfirm={(status, reason) => {
+            if (decisionModal.vendorId) {
+              updateUserStatus(decisionModal.vendorId, status, reason);
+              setDecisionModal({ isOpen: false, vendorId: null });
+            }
+          }}
+          actions={[
+            { label: "Approve Vendor", status: "active", color: "#1E8E3E" },
+            { label: "Put on Hold", status: "on-hold", color: "#FFC107", requireReason: true },
+            { label: "Reject Application", status: "rejected", color: "#ef4444", requireReason: true }
+          ]}
+        />
       )}
     </div>
   );

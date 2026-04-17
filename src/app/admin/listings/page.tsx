@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import { useApp } from "@/context/AppContext";
+import DecisionModal from "@/components/admin/DecisionModal";
 
 export default function AdminListings() {
-  const { listings, bids, updateListingStatus } = useApp();
+  const { listings, bids, updateListingStatus, users, assignVendor } = useApp();
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "pending">("all");
+  const [filter, setFilter] = useState<"all" | "active" | "completed" | "pending" | "verified">("all");
+  const [decisionModal, setDecisionModal] = useState<{ isOpen: boolean; listingId: string | null }>({ isOpen: false, listingId: null });
+  const [assignModal, setAssignModal] = useState<{ isOpen: boolean; listingId: string | null }>({ isOpen: false, listingId: null });
 
   const filtered = listings
     .filter(l => filter === "all" || l.status === filter)
@@ -101,21 +104,24 @@ export default function AdminListings() {
                   <td>
                     <div className="flex gap-2">
                       {listing.status === "pending" && (
-                        <>
-                          <button onClick={() => updateListingStatus(listing.id, "active")}
-                            className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all" title="Approve Listing">
-                            <span className="material-symbols-outlined text-sm">check_circle</span>
-                          </button>
-                          <button onClick={() => updateListingStatus(listing.id, "rejected")}
-                            className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all" title="Reject Listing">
-                            <span className="material-symbols-outlined text-sm">block</span>
-                          </button>
-                        </>
+                        <button onClick={() => setDecisionModal({ isOpen: true, listingId: listing.id })}
+                          className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all" title="Review Listing">
+                          <span className="material-symbols-outlined text-sm">fact_check</span>
+                        </button>
+                      )}
+                      {listing.status === "verified" && (
+                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">Assigned</span>
+                      )}
+                      {(listing.status === "pending" || listing.status === "active") && (
+                        <button onClick={() => setAssignModal({ isOpen: true, listingId: listing.id })}
+                          className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all" title="Assign Vendor">
+                          <span className="material-symbols-outlined text-sm">person_add</span>
+                        </button>
                       )}
                       {listing.status === "active" && (
                         <button onClick={() => updateListingStatus(listing.id, "completed")}
-                          className="text-xs font-bold px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
-                          Mark Complete
+                          className="text-xs font-bold px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">
+                          Complete
                         </button>
                       )}
                       {(listing.status !== "cancelled" && listing.status !== "rejected") && (
@@ -135,6 +141,74 @@ export default function AdminListings() {
           </tbody>
         </table>
       </div>
+
+      {/* Decision Modal */}
+      {decisionModal.listingId && (
+        <DecisionModal
+          isOpen={decisionModal.isOpen}
+          onClose={() => setDecisionModal({ isOpen: false, listingId: null })}
+          title="Listing Review"
+          itemDetails={[
+            { label: "Listing", value: listings.find(l => l.id === decisionModal.listingId)?.title || "" },
+            { label: "Proposed Weight", value: `${listings.find(l => l.id === decisionModal.listingId)?.weight || 0} KG` }
+          ]}
+          onConfirm={(status, reason) => {
+            if (decisionModal.listingId) {
+              updateListingStatus(decisionModal.listingId, status, reason);
+              setDecisionModal({ isOpen: false, listingId: null });
+            }
+          }}
+          actions={[
+            { label: "Approve & Go Live", status: "active", color: "#1E8E3E" },
+            { label: "Put on Hold", status: "on-hold", color: "#FFC107", requireReason: true },
+            { label: "Reject Listing", status: "rejected", color: "#ef4444", requireReason: true }
+          ]}
+        />
+      )}
+
+      {/* Vendor Assignment Modal */}
+      {assignModal.isOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setAssignModal({ isOpen: false, listingId: null })} />
+          <div className="relative bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 space-y-6">
+            <div>
+              <h3 className="text-xl font-black text-slate-900">Assign Vendor</h3>
+              <p className="text-sm text-slate-500 mt-1">Select a verified vendor to handle this request.</p>
+            </div>
+            
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+              {users.filter(u => u.role === 'vendor' && u.status === 'active').map(vendor => (
+                <button
+                  key={vendor.id}
+                  onClick={() => {
+                    if (assignModal.listingId) assignVendor(assignModal.listingId, vendor.id);
+                    setAssignModal({ isOpen: false, listingId: null });
+                  }}
+                  className="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center font-black text-blue-600">
+                    {vendor.name[0]}
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900">{vendor.name}</p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-1">CPCB Verified</p>
+                  </div>
+                </button>
+              ))}
+              {users.filter(u => u.role === 'vendor' && u.status === 'active').length === 0 && (
+                <p className="text-center py-8 text-slate-400 italic text-sm">No verified vendors available.</p>
+              )}
+            </div>
+            
+            <button
+              onClick={() => setAssignModal({ isOpen: false, listingId: null })}
+              className="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

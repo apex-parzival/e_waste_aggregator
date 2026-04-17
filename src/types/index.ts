@@ -45,8 +45,9 @@ export interface User {
   password?: string;
   phone?: string;
   avatar?: string;
-  status?: 'active' | 'pending' | 'rejected';
-  onboardingStep?: number; // 1-4, or 5 = complete
+  status: 'active' | 'pending' | 'rejected' | 'disabled' | 'on-hold';
+  statusReason?: string;
+  onboardingStep: number; // 1-4, or 5 = complete
   onboardingProfile?: OnboardingProfile;
   documents?: UploadedDoc[];
   bankDetails?: BankDetails;
@@ -61,7 +62,11 @@ export interface Listing {
   weight: number;
   location: string;
   locationType?: string;
-  status: 'active' | 'pending' | 'completed' | 'cancelled' | 'rejected';
+  status: 'pending' | 'verified' | 'active' | 'completed' | 'cancelled' | 'rejected' | 'on-hold';
+  statusReason?: string;
+  adminStatus?: 'pending' | 'accepted' | 'rejected';
+  assignedVendorId?: string;
+  assignedVendorName?: string;
   auctionPhase?: 'draft' | 'sealed_bid' | 'open_configuration' | 'live' | 'completed';
   price?: number;
   userId: string;
@@ -94,7 +99,8 @@ export interface Bid {
   vendorName: string;
   amount: number;
   type?: 'sealed' | 'open';
-  status: 'pending' | 'accepted' | 'rejected';
+  status: 'pending' | 'accepted' | 'rejected' | 'withdrawn';
+  statusReason?: string;
   emdPaid?: boolean;
   createdAt: string;
   note?: string;

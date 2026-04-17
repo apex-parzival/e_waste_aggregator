@@ -220,7 +220,7 @@ function LandingPageContent() {
 
                       <div className="grid grid-cols-1 gap-5">
                         <button
-                          onClick={() => router.push('/client-login?tab=register')}
+                          onClick={() => router.push('/get-started')}
                           className="group relative p-8 bg-emerald-600 rounded-3xl text-left transition-all hover:bg-emerald-700 hover:shadow-2xl hover:shadow-emerald-900/20 overflow-hidden active:scale-[0.98]"
                         >
                           <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
@@ -237,7 +237,7 @@ function LandingPageContent() {
                         </button>
 
                         <button
-                          onClick={() => router.push('/vendor-login?tab=register')}
+                          onClick={() => router.push('/get-started')}
                           className="group relative p-8 bg-white border-2 border-slate-100 rounded-3xl text-left transition-all hover:border-blue-600 hover:shadow-2xl hover:shadow-blue-900/10 overflow-hidden active:scale-[0.98]"
                         >
                           <div className="relative z-10 flex items-center gap-6">
@@ -300,12 +300,14 @@ function LandingPageContent() {
                           {([
                             ["Client", "client@weconnect.com", "password", "#1E8E3E"],
                             ["Vendor", "vendor@weconnect.com", "password", "#0B5ED7"],
-                            ["Guest", "guest@weconnect.com", "password", "#FFC107"]
+                            ["Guest", "guest@weconnect.com", "password", "#FFC107"],
+                            ["Admin", "admin@weconnect.com", "password", "#0f172a"]
                           ] as const).map(([label, email, pw, color]) => (
                             <button key={email} onClick={() => {
-                              login(label.toLowerCase() as UserRole, email);
+                              login(label.toLowerCase() as any, email);
                               if (label === 'Client') router.push('/client/dashboard');
                               else if (label === 'Vendor') router.push('/vendor/dashboard');
+                              else if (label === 'Admin') router.push('/admin/dashboard');
                               else router.push('/consumer/pickup');
                             }}
                               className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between group hover:bg-white hover:border-slate-900 transition-all">
@@ -555,8 +557,8 @@ function LandingPageContent() {
             Start Selling Your <br />E-Waste Today
           </h2>
           <div className="relative z-10 flex flex-col sm:flex-row gap-6 justify-center">
-            <button suppressHydrationWarning onClick={() => router.push('/client-login?tab=register')} className="btn-primary font-bold text-[18px] px-12 py-5 shadow-[0_4px_16px_rgba(30,142,62,0.35)]">
-              Get Started
+            <button suppressHydrationWarning onClick={() => router.push('/get-started')} className="btn-primary font-black text-xs uppercase tracking-widest px-8 h-12 shadow-lg shadow-emerald-700/20 active:scale-95 transition-all">
+              Register Now
             </button>
           </div>
         </div>

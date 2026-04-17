@@ -14,15 +14,16 @@ const VENDOR_LINKS = [
   { href: "/vendor/profile", icon: "badge", label: "Profile & Docs" },
 ];
 
-const CLIENT_LINKS = [
-  { href: "/client/dashboard", icon: "dashboard", label: "Dashboard" },
-  { href: "/client/post", icon: "add_circle", label: "Post E-Waste" },
-  { href: "/client/listings", icon: "inventory_2", label: "My Listings" },
-  { href: "/client/bids", icon: "gavel", label: "Bids Received" },
-  { href: "/client/live-auction", icon: "sensors", label: "Live Auction" },
-  { href: "/client/reports", icon: "bar_chart", label: "Reports" },
   { href: "/client/notifications", icon: "notifications", label: "Notifications" },
   { href: "/client/profile", icon: "person", label: "Profile" },
+];
+
+const CONSUMER_LINKS = [
+  { href: "/consumer/dashboard", icon: "dashboard", label: "Dashboard" },
+  { href: "/consumer/pickup", icon: "add_circle", label: "New Pickup" },
+  { href: "/consumer/history", icon: "history", label: "Order History" },
+  { href: "/consumer/impact", icon: "eco", label: "My Impact" },
+  { href: "/consumer/profile", icon: "person", label: "Profile" },
 ];
 
 const ADMIN_LINKS = [
@@ -43,7 +44,7 @@ export default function Sidebar() {
 
   if (!currentUser) return null;
   const role = currentUser.role;
-  const links = role === "vendor" ? VENDOR_LINKS : role === "admin" ? ADMIN_LINKS : CLIENT_LINKS;
+  const links = role === "vendor" ? VENDOR_LINKS : role === "admin" ? ADMIN_LINKS : role === "guest" ? CONSUMER_LINKS : CLIENT_LINKS;
   const unreadNotifs = (notifications || []).filter(n => n.userId === currentUser.id && !n.read).length;
 
   const handleLogout = () => {
@@ -71,7 +72,7 @@ export default function Sidebar() {
             <div>
               <p className="font-headline font-extrabold text-white text-base tracking-tight leading-none uppercase">WE<span className="text-[#0B5ED7]">CONNECT</span></p>
               <p className="text-[9px] uppercase tracking-[0.2em] text-[#1E8E3E] font-bold">
-                {role === "admin" ? "Admin Console" : role === "vendor" ? "Vendor Portal" : "Client Portal"}
+                {role === "admin" ? "Admin Console" : role === "vendor" ? "Vendor Portal" : role === "guest" ? "User Portal" : "Client Portal"}
               </p>
             </div>
           </div>

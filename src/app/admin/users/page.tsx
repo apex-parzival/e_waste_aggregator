@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { formatDate } from "@/utils/format";
+import DecisionModal from "@/components/admin/DecisionModal";
 
 export default function AdminUsers() {
   const { users, updateUserStatus } = useApp();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending" | "rejected">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "pending" | "rejected" | "on-hold">("all");
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [decisionModal, setDecisionModal] = useState<{ isOpen: boolean; userId: string | null }>({ isOpen: false, userId: null });
 
   const clients = users.filter(u => u.role === "client");
   const stats = {
@@ -114,15 +116,9 @@ export default function AdminUsers() {
                       <span className="material-symbols-outlined text-lg">visibility</span>
                     </button>
                     {client.status !== "active" && (
-                      <button onClick={() => updateUserStatus(client.id, "active")}
-                        className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all" title="Approve">
-                        <span className="material-symbols-outlined text-sm">check_circle</span>
-                      </button>
-                    )}
-                    {client.status !== "rejected" && (
-                      <button onClick={() => updateUserStatus(client.id, "rejected")}
-                        className="w-8 h-8 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all" title="Reject">
-                        <span className="material-symbols-outlined text-sm">block</span>
+                      <button onClick={() => setDecisionModal({ isOpen: true, userId: client.id })}
+                        className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all" title="Review Client">
+                        <span className="material-symbols-outlined text-sm">fact_check</span>
                       </button>
                     )}
                   </div>
@@ -218,6 +214,31 @@ export default function AdminUsers() {
             </div>
           </div>
         </div>
+      )}
+      )}
+
+      {/* Decision Modal */}
+      {decisionModal.userId && (
+        <DecisionModal
+          isOpen={decisionModal.isOpen}
+          onClose={() => setDecisionModal({ isOpen: false, userId: null })}
+          title="Client Account Decision"
+          itemDetails={[
+            { label: "Client Name", value: users.find(u => u.id === decisionModal.userId)?.name || "" },
+            { label: "Email", value: users.find(u => u.id === decisionModal.userId)?.email || "" }
+          ]}
+          onConfirm={(status, reason) => {
+            if (decisionModal.userId) {
+              updateUserStatus(decisionModal.userId, status, reason);
+              setDecisionModal({ isOpen: false, userId: null });
+            }
+          }}
+          actions={[
+            { label: "Approve Client", status: "active", color: "#1E8E3E" },
+            { label: "Put on Hold", status: "on-hold", color: "#FFC107", requireReason: true },
+            { label: "Reject Account", status: "rejected", color: "#ef4444", requireReason: true }
+          ]}
+        />
       )}
     </div>
   );

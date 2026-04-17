@@ -55,7 +55,7 @@ function ClientLoginPageContent() {
     setLoading(true);
     await new Promise(r => setTimeout(r, 800));
     login("client", regEmail);
-    router.push("/client/dashboard");
+    router.push("/onboarding/client/step1");
     setLoading(false);
   };
 

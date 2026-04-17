@@ -14,10 +14,11 @@ interface AppContextType extends AppState {
   completeOnboarding: () => void;
   addListing: (listing: Omit<Listing, 'id' | 'createdAt' | 'status'>) => void;
   addBid: (bid: Omit<Bid, 'id' | 'createdAt' | 'status'>) => void;
-  updateListingStatus: (id: string, status: Listing['status']) => void;
+  updateListingStatus: (id: string, status: Listing['status'], reason?: string) => void;
   updateAuctionPhase: (id: string, phase: Listing['auctionPhase']) => void;
-  updateBidStatus: (id: string, status: Bid['status']) => void;
-  updateUserStatus: (id: string, status: User['status']) => void;
+  updateBidStatus: (id: string, status: Bid['status'], reason?: string) => void;
+  updateUserStatus: (id: string, status: User['status'], reason?: string) => void;
+  assignVendor: (listingId: string, vendorId: string) => void;
   acceptBid: (bidId: string) => void;
   addNotification: (n: Omit<Notification, 'id' | 'createdAt' | 'read'>) => void;
   markNotificationRead: (id: string) => void;
@@ -339,7 +340,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(), status: 'pending', bidCount: 0, viewCount: 0,
       auctionPhase: 'sealed_bid',
     };
-    setState(prev => ({ ...prev, listings: [newListing, ...prev.listings] }));
+    setState(prev => ({ 
+      ...prev, 
+      listings: [newListing, ...prev.listings],
+      notifications: [...prev.notifications, ...prev.users.filter(u => u.role === 'admin').map(admin => ({
+        id: `N${Date.now()}${admin.id}`, userId: admin.id, type: 'general' as const, title: 'New Listing Review', message: `A new e-waste listing "${listing.title}" is pending your review.`, read: false, createdAt: new Date().toISOString()
+      }))]
+    }));
   };
 
   const addBid = (bid: Omit<Bid, 'id' | 'createdAt' | 'status'>) => {
@@ -365,8 +372,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const updateListingStatus = (id: string, status: Listing['status']) => {
-    setState(prev => ({ ...prev, listings: prev.listings.map(l => l.id === id ? { ...l, status } : l) }));
+  const updateListingStatus = (id: string, status: Listing['status'], reason?: string) => {
+    setState(prev => ({ 
+      ...prev, 
+      listings: prev.listings.map(l => l.id === id ? { ...l, status, statusReason: reason } : l),
+      notifications: status !== 'pending' ? [...prev.notifications, {
+        id: `N${Date.now()}`, userId: prev.listings.find(l => l.id === id)?.userId || '', type: 'general' as const, title: `Listing ${status.charAt(0).toUpperCase() + status.slice(1)}`, message: `Your listing status has been updated to ${status}. ${reason || ''}`, read: false, createdAt: new Date().toISOString()
+      }] : prev.notifications
+    }));
   };
 
   const updateAuctionPhase = (id: string, phase: Listing['auctionPhase']) => {
@@ -381,15 +394,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setState(prev => ({ ...prev, bids: prev.bids.map(b => b.id === id ? { ...b, ...updates } : b) }));
   };
 
-  const updateBidStatus = (id: string, status: Bid['status']) => {
-    setState(prev => ({ ...prev, bids: prev.bids.map(b => b.id === id ? { ...b, status } : b) }));
+  const updateBidStatus = (id: string, status: Bid['status'], reason?: string) => {
+    setState(prev => ({ 
+      ...prev, 
+      bids: prev.bids.map(b => b.id === id ? { ...b, status, statusReason: reason } : b),
+      notifications: [...prev.notifications, {
+        id: `N${Date.now()}`, userId: prev.bids.find(b => b.id === id)?.vendorId || '', type: 'general' as const, title: `Bid ${status.charAt(0).toUpperCase() + status.slice(1)}`, message: `Your bid status has been updated to ${status}. ${reason || ''}`, read: false, createdAt: new Date().toISOString()
+      }]
+    }));
   };
 
-  const updateUserStatus = (id: string, status: User['status']) => {
+  const updateUserStatus = (id: string, status: User['status'], reason?: string) => {
     setState(prev => ({
       ...prev,
-      users: prev.users.map(u => u.id === id ? { ...u, status } : u),
+      users: prev.users.map(u => u.id === id ? { ...u, status, statusReason: reason } : u),
       currentUser: prev.currentUser?.id === id ? { ...prev.currentUser, status } : prev.currentUser,
+      notifications: [...prev.notifications, {
+        id: `N${Date.now()}`, userId: id, type: 'general' as const, title: `Account ${status.charAt(0).toUpperCase() + status.slice(1)}`, message: `Your account status has been updated to ${status}. ${reason || ''}`, read: false, createdAt: new Date().toISOString()
+      }]
+    }));
+  };
+
+  const assignVendor = (listingId: string, vendorId: string) => {
+    setState(prev => ({
+      ...prev,
+      listings: prev.listings.map(l => l.id === listingId ? { ...l, assignedVendorId: vendorId, status: 'verified' } : l),
+      notifications: [...prev.notifications, {
+        id: `N${Date.now()}`, userId: vendorId, type: 'general' as const, title: 'New Assignment', message: `You have been assigned to listing ${listingId}.`, read: false, createdAt: new Date().toISOString()
+      }]
     }));
   };
 
@@ -454,7 +486,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ...state,
       login, logout, register, startOnboarding,
       saveOnboardingProfile, saveOnboardingDocuments, saveOnboardingBankDetails, completeOnboarding,
-      addListing, addBid, updateListingStatus, updateAuctionPhase, updateBidStatus, updateUserStatus,
+      addListing, addBid, updateListingStatus, updateAuctionPhase, updateBidStatus, updateUserStatus, assignVendor,
       acceptBid, addNotification, markNotificationRead, editListing,
       editBid, addClosingDocument, updateUserProfile, changePassword, deleteAccount,
       isSidebarOpen: state.isSidebarOpen ?? false,

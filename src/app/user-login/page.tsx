@@ -40,7 +40,7 @@ function UserLoginPageContent() {
     setLoading(true);
     await new Promise(r => setTimeout(r, 800));
     login("guest", loginEmail);
-    router.push("/consumer/pickup");
+    router.push("/consumer/dashboard");
     setLoading(false);
   };
 
@@ -54,7 +54,7 @@ function UserLoginPageContent() {
     setLoading(true);
     await new Promise(r => setTimeout(r, 800));
     login("guest", regEmail);
-    router.push("/consumer/pickup");
+    router.push("/consumer/dashboard");
     setLoading(false);
   };
 

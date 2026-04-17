@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { formatDate } from "@/utils/format";
+import DecisionModal from "@/components/admin/DecisionModal";
 
 function exportCSV(bids: { id: string; vendorName: string; amount: number; status: string; createdAt: string; listingId: string }[], listings: { id: string; title: string; category: string; weight: number }[]) {
   const header = ["Bid ID", "Listing", "Category", "Weight(KG)", "Vendor", "Amount(INR)", "Status", "Date"];
@@ -33,6 +34,7 @@ export default function AdminTransactions() {
   const { bids, listings, updateBidStatus, editBid } = useApp();
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "accepted" | "rejected">("all");
   const [search, setSearch] = useState("");
+  const [decisionModal, setDecisionModal] = useState<{ isOpen: boolean; bidId: string | null }>({ isOpen: false, bidId: null });
 
   const filtered = bids
     .filter(b => statusFilter === "all" || b.status === statusFilter)
@@ -158,16 +160,10 @@ export default function AdminTransactions() {
                         </button>
                       )}
                       {bid.status === "pending" && bid.emdPaid && (
-                        <>
-                          <button onClick={() => updateBidStatus(bid.id, "accepted")}
-                            className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all" title="Accept Bid">
-                            <span className="material-symbols-outlined text-sm">check</span>
-                          </button>
-                          <button onClick={() => updateBidStatus(bid.id, "rejected")}
-                            className="w-7 h-7 rounded-lg bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all" title="Reject Bid">
-                            <span className="material-symbols-outlined text-sm">close</span>
-                          </button>
-                        </>
+                        <button onClick={() => setDecisionModal({ isOpen: true, bidId: bid.id })}
+                          className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all" title="Review Bid">
+                          <span className="material-symbols-outlined text-sm">fact_check</span>
+                        </button>
                       )}
                     </div>
                   </td>
@@ -180,6 +176,31 @@ export default function AdminTransactions() {
           </tbody>
         </table>
       </div>
+      </div>
+
+      {/* Decision Modal */}
+      {decisionModal.bidId && (
+        <DecisionModal
+          isOpen={decisionModal.isOpen}
+          onClose={() => setDecisionModal({ isOpen: false, bidId: null })}
+          title="Bid Review Decision"
+          itemDetails={[
+            { label: "Vendor", value: bids.find(b => b.id === decisionModal.bidId)?.vendorName || "" },
+            { label: "Amount", value: `₹${(bids.find(b => b.id === decisionModal.bidId)?.amount || 0).toLocaleString()}` },
+            { label: "Listing", value: listings.find(l => l.id === bids.find(b => b.id === decisionModal.bidId)?.listingId)?.title || "" }
+          ]}
+          onConfirm={(status, reason) => {
+            if (decisionModal.bidId) {
+              updateBidStatus(decisionModal.bidId, status, reason);
+              setDecisionModal({ isOpen: false, bidId: null });
+            }
+          }}
+          actions={[
+            { label: "Accept Bid (Winner)", status: "accepted", color: "#1E8E3E" },
+            { label: "Reject Bid", status: "rejected", color: "#ef4444", requireReason: true }
+          ]}
+        />
+      )}
     </div>
   );
 }

@@ -56,7 +56,7 @@ function VendorLoginPageContent() {
     setLoading(true);
     await new Promise(r => setTimeout(r, 800));
     login("vendor", regEmail);
-    router.push("/vendor/dashboard");
+    router.push("/onboarding/vendor/step1");
     setLoading(false);
   };
 
