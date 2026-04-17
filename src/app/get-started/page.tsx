@@ -16,7 +16,7 @@ export default function GetStartedPage() {
         
         {/* Header */}
         <div className="text-center mb-16 cursor-pointer" onClick={() => router.push('/')}>
-          <img src="/logo%203.png" alt="We Connect" className="w-[180px] mx-auto object-contain mb-8 brightness-0 invert" />
+          <img src="/logo%203.png" alt="We Connect" className="w-[180px] mx-auto object-contain mb-8" />
           <h1 className="text-[2.5rem] md:text-[3.5rem] font-headline font-extrabold text-white mb-4 tracking-tight">Choose Your Role</h1>
           <p className="text-white/60 text-lg md:text-xl font-medium max-w-2xl mx-auto">Select how you'd like to participate in the We Connect digital ecosystem</p>
         </div>

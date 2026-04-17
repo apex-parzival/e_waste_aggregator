@@ -66,7 +66,7 @@ export default function Sidebar() {
         <div className="px-6 py-5 flex items-center justify-between border-b border-white/10 mb-2">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center p-1 bg-white/5">
-              <img src="/logo.png" alt="WeConnect Logo" className="w-full h-full object-contain" />
+              <img src="/logo%203.png" alt="WeConnect Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <p className="font-headline font-extrabold text-white text-base tracking-tight leading-none uppercase">WE<span className="text-[#0B5ED7]">CONNECT</span></p>

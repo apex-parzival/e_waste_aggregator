@@ -100,7 +100,7 @@ function LandingPageContent() {
         <div className="max-w-7xl mx-auto px-6 md:px-10 py-3 md:py-4 flex items-center justify-between w-full">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
-            <img src="/logo%203.png" alt="We Connect" className="h-[40px] md:h-[50px] object-contain brightness-0" />
+            <img src="/logo%203.png" alt="We Connect" className="h-[40px] md:h-[50px] object-contain" />
             <span className="text-xl font-black text-slate-900 tracking-tighter hidden sm:block">WE CONNECT</span>
           </div>
 
@@ -566,7 +566,7 @@ function LandingPageContent() {
       <footer className="py-12 px-6 md:px-10 bg-[#1A1A2E] text-[rgba(255,255,255,0.8)] border-t-[3px] border-t-[#1E8E3E]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
-            <img src="/logo 3.png" alt="We Connect" className="w-[120px] h-auto object-contain brightness-0 invert" />
+            <img src="/logo%203.png" alt="We Connect" className="w-[120px] h-auto object-contain" />
           </div>
           <p className="text-[12px] uppercase tracking-widest font-medium">
             © 2026 We Connect Vendors LLP. All Rights Reserved.

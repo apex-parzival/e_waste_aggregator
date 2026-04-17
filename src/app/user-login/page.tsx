@@ -96,7 +96,7 @@ function UserLoginPageContent() {
           
           {/* Branding */}
           <div className="flex justify-center mb-10 cursor-pointer" onClick={() => router.push('/')}>
-            <img src="/logo%203.png" alt="We Connect" className="h-10 object-contain brightness-0" />
+            <img src="/logo%203.png" alt="We Connect" className="h-10 object-contain" />
           </div>
 
           {/* Tab Switcher */}
