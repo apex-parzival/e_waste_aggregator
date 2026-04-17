@@ -73,7 +73,7 @@ export default function ConfigureLiveAuction() {
       userId: "all_vendors", // Special keyword for global notification or handle in context
       title: "New Live Auction!",
       message: `A live auction for "${listing.title}" has been scheduled.`,
-      type: "info"
+      type: "general"
     });
 
     router.push("/client/listings");
