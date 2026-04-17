@@ -276,8 +276,12 @@ export default function LandingPage() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
-                        {([["client", "corporate_fare", "Client", "#1E8E3E"], ["vendor", "local_shipping", "Vendor", "#0B5ED7"], ["user", "person", "Individual", "#FFC107"]] as const)
-                          .concat(isAdminMode ? [["admin", "admin_panel_settings", "Admin", "#0f172a"]] : [])
+                        {([
+                          ["client", "corporate_fare", "Client", "#1E8E3E"], 
+                          ["vendor", "local_shipping", "Vendor", "#0B5ED7"], 
+                          ["user", "person", "Individual", "#FFC107"],
+                          ...(isAdminMode ? [["admin", "admin_panel_settings", "Admin", "#0f172a"]] : [])
+                        ] as [string, string, string, string][])
                           .map(([r, icon, title, color]) => (
                           <button key={r} type="button" onClick={() => router.push(`/${r}-login`)}
                             suppressHydrationWarning
