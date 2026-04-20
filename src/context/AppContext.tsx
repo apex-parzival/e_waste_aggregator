@@ -7,7 +7,7 @@ interface AppContextType extends AppState {
   login: (role: UserRole, name: string) => void;
   logout: () => void;
   register: (role: UserRole, name: string, email: string) => void;
-  startOnboarding: (role: 'client' | 'vendor', email: string, password: string) => void;
+  startOnboarding: (role: 'client' | 'vendor' | 'consumer', email: string, password: string) => void;
   saveOnboardingProfile: (profile: OnboardingProfile) => void;
   saveOnboardingDocuments: (docs: UploadedDoc[]) => void;
   saveOnboardingBankDetails: (bank: BankDetails) => void;
@@ -114,13 +114,22 @@ const MOCK_LISTINGS: Listing[] = [
     auctionPhase: 'sealed_bid', basePrice: 250000, highestEmdAmount: 30000,
     images: ['https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80']
   },
+
   {
-    id: 'ECO18990', title: 'Used Laser Printers and Photocopiers', category: 'Printers',
-    weight: 1200, location: 'Mumbai, BKC', status: 'active', userId: 'C1',
-    userName: 'Tech Corp Ltd', description: 'Bulk lot of 12 enterprise photcopiers and 45 laser printers. Mostly functional but old.',
-    createdAt: '2026-04-13T10:00:00.000Z', urgency: 'medium', bidCount: 0, viewCount: 34,
-    auctionPhase: 'sealed_bid', basePrice: 300000, highestEmdAmount: 40000,
-    images: ['https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?auto=format&fit=crop&w=800&q=80']
+    id: 'CON-L1', title: 'Old Sony Bravia 42 inch LED TV', category: 'Display Units', subCategory: 'Consumer Electronics',
+    weight: 15, location: 'Koramangala, Bangalore', status: 'completed', userId: 'CON1',
+    userName: 'Rahul Sharma', description: 'Used LED TV with screen flickering issues. Original stand included.',
+    createdAt: '2026-04-12T10:00:00.000Z', urgency: 'medium', bidCount: 3, viewCount: 45,
+    auctionPhase: 'completed', basePrice: 800, bidIncrement: 100,
+    images: ['https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?auto=format&fit=crop&w=800&q=80']
+  },
+  {
+    id: 'CON-L2', title: 'Mixed Home Electronics (Blender, Iron, Toaster)', category: 'Home Appliances', subCategory: 'Small Appliances',
+    weight: 12, location: 'Koramangala, Bangalore', status: 'active', userId: 'CON1',
+    userName: 'Rahul Sharma', description: 'Assorted non-functional home appliances. Toaster heating element broken, blender motor burnt.',
+    createdAt: '2026-04-17T09:00:00.000Z', urgency: 'low', bidCount: 1, viewCount: 22,
+    auctionPhase: 'sealed_bid', basePrice: 400, highestEmdAmount: 50,
+    images: ['https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=80']
   }
 ];
 
@@ -143,6 +152,8 @@ const MOCK_BIDS: Bid[] = [
   { id: 'B13', listingId: 'ECO18905', vendorId: 'V1', vendorName: 'Green Recyclers Pvt Ltd', amount: 72000, status: 'accepted', type: 'open', createdAt: '2026-03-05T14:00:00.000Z' },
   { id: 'B9', listingId: 'ECO18985', vendorId: 'V1', vendorName: 'Green Recyclers Pvt Ltd', amount: 260000, status: 'pending', type: 'sealed', createdAt: '2026-04-16T15:00:00.000Z' },
   { id: 'B10', listingId: 'ECO18985', vendorId: 'V2', vendorName: 'EcoMetal Solutions', amount: 255000, status: 'pending', type: 'sealed', createdAt: '2026-04-16T14:00:00.000Z' },
+  { id: 'CON-B1', listingId: 'CON-L1', vendorId: 'V1', vendorName: 'Green Recyclers Pvt Ltd', amount: 1500, status: 'accepted', type: 'open', createdAt: '2026-04-14T11:00:00.000Z' },
+  { id: 'CON-B2', listingId: 'CON-L2', vendorId: 'V2', vendorName: 'EcoMetal Solutions', amount: 450, status: 'pending', type: 'sealed', createdAt: '2026-04-17T15:00:00.000Z' },
 ];
 
 const MOCK_USERS: User[] = [
@@ -156,6 +167,7 @@ const MOCK_USERS: User[] = [
   { id: 'V4', name: 'PureRecovery Solutions', role: 'vendor', email: 'contact@purerecovery.com', status: 'pending', phone: '+91 43210 98765', registeredAt: '2026-04-14T10:00:00.000Z', onboardingStep: 4 },
   { id: 'V5', name: 'Urban Miners', role: 'vendor', email: 'hello@urbanminers.com', status: 'pending', phone: '+91 32109 87654', registeredAt: '2026-04-15T10:00:00.000Z', onboardingStep: 2 },
   { id: 'G1', name: 'Individual User', role: 'guest', email: 'guest@weconnect.com', status: 'active', registeredAt: '2026-04-16T13:00:00.000Z', onboardingStep: 5 },
+  { id: 'CON1', name: 'Rahul Sharma', role: 'consumer', email: 'consumer@weconnect.com', status: 'active', phone: '+91 91234 56789', registeredAt: '2026-04-16T13:00:00.000Z', onboardingStep: 5 },
 ];
 
 const MOCK_NOTIFICATIONS: Notification[] = [
@@ -165,6 +177,8 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   { id: 'N4', userId: 'C3', type: 'bid_received', title: 'Live Bid Received', message: 'Green Recyclers just bid ₹470,000 on Industrial Copper Wiring.', read: false, createdAt: '2026-04-16T15:40:00.000Z' },
   { id: 'N5', userId: 'V4', type: 'account_approved', title: 'Account Under Review', message: 'Admin is currently reviewing your documents.', read: false, createdAt: '2026-04-15T10:00:00.000Z' },
   { id: 'N6', userId: 'C1', type: 'bid_received', title: 'Highest Bid Alert', message: 'RecycleFirst India just placed a new high bid on CRT Monitors.', read: false, createdAt: '2026-04-16T15:50:00.000Z' },
+  { id: 'CON-N1', userId: 'CON1', type: 'bid_accepted', title: 'Pick-up Scheduled', message: 'Your LED TV disposal request has been confirmed. Payout of ₹1,500 will be settled post verification.', read: false, createdAt: '2026-04-15T10:00:00.000Z' },
+  { id: 'CON-N2', userId: 'CON1', type: 'general', title: 'New Achievement 🌳', message: 'You have neutralized 42KG of Carbon this month. Check your impact score!', read: false, createdAt: '2026-04-17T10:00:00.000Z' },
 ];
 
 const initialState: AppState = {
@@ -211,7 +225,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [state, isInitialized]);
 
   const login = (role: UserRole, identifier: string) => {
-    const isDemoEmail = ['admin@weconnect.com', 'client@weconnect.com', 'vendor@weconnect.com', 'guest@weconnect.com'].includes(identifier.toLowerCase());
+    const isDemoEmail = ['admin@weconnect.com', 'client@weconnect.com', 'vendor@weconnect.com', 'guest@weconnect.com', 'consumer@weconnect.com'].includes(identifier.toLowerCase());
     if (isDemoEmail) {
       const demoUser = MOCK_USERS.find(u => u.email === identifier.toLowerCase());
       if (demoUser) {
@@ -262,7 +276,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
-  const startOnboarding = (role: 'client' | 'vendor', email: string, password: string) => {
+  const startOnboarding = (role: 'client' | 'vendor' | 'consumer', email: string, password: string) => {
     setState(prev => ({
       ...prev,
       pendingOnboardingRole: role,

@@ -51,7 +51,8 @@ export default function Sidebar() {
 
   if (!currentUser) return null;
   const role = currentUser.role;
-  const links = role === "vendor" ? VENDOR_LINKS : role === "admin" ? ADMIN_LINKS : role === "guest" ? CONSUMER_LINKS : CLIENT_LINKS;
+  const isConsumer = role === "consumer" || role === "guest";
+  const links = role === "vendor" ? VENDOR_LINKS : role === "admin" ? ADMIN_LINKS : isConsumer ? CONSUMER_LINKS : CLIENT_LINKS;
   const unreadNotifs = (notifications || []).filter(n => n.userId === currentUser.id && !n.read).length;
 
   const handleLogout = () => {
@@ -79,7 +80,7 @@ export default function Sidebar() {
             <div>
               <p className="font-headline font-extrabold text-white text-base tracking-tight leading-none uppercase">WE<span className="text-[#0B5ED7]">CONNECT</span></p>
               <p className="text-[9px] uppercase tracking-[0.2em] text-[#1E8E3E] font-bold">
-                {role === "admin" ? "Admin Console" : role === "vendor" ? "Vendor Portal" : role === "guest" ? "User Portal" : "Client Portal"}
+                {role === "admin" ? "Admin Console" : role === "vendor" ? "Vendor Portal" : isConsumer ? "Individual Portal" : "Client Portal"}
               </p>
             </div>
           </div>
@@ -121,7 +122,7 @@ export default function Sidebar() {
                   </span>
                 )}
                 {isActive && (
-                  <div className="w-1.5 h-4 rounded-full bg-[#1E8E3E] ml-auto" />
+                  <div className={`w-1.5 h-4 rounded-full ml-auto ${isConsumer ? 'bg-[#FFC107]' : 'bg-[#1E8E3E]'}`} />
                 )}
               </Link>
             );

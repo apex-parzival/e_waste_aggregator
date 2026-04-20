@@ -1,12 +1,8 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { useApp } from "@/context/AppContext";
-import { UserRole } from "@/types";
-
-type AuthTab = "login" | "register";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 function LandingPageContent() {
   const router = useRouter();
@@ -14,61 +10,6 @@ function LandingPageContent() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { login } = useApp();
-
-  const searchParams = useSearchParams();
-  const isAdminMode = searchParams.get('admin') === 'true';
-
-  // Auth States
-  const [tab, setTab] = useState<AuthTab>("register");
-  const [loginRole, setLoginRole] = useState<UserRole>("client");
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  // Registration States
-  const [regRole, setRegRole] = useState<"client" | "vendor">("client");
-  const [regName, setRegName] = useState("");
-  const [regEmail, setRegEmail] = useState("");
-  const [regPassword, setRegPassword] = useState("");
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      // Simulation of auth
-      await new Promise(r => setTimeout(r, 1000));
-      login(loginRole, loginEmail);
-
-      if (loginRole === 'admin') router.push('/admin/dashboard');
-      else if (loginRole === 'client') router.push('/client/dashboard');
-      else if (loginRole === 'vendor') router.push('/vendor/dashboard');
-      else router.push('/user/dashboard');
-    } catch (err) {
-      setError("Invalid credentials. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      await new Promise(r => setTimeout(r, 1000));
-      // In a real app, we'd call a register API here
-      login(regRole as UserRole, regEmail);
-      router.push(`/onboarding/${regRole}/step1`);
-    } catch (err) {
-      setError("Registration failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     setMounted(true);
@@ -167,171 +108,57 @@ function LandingPageContent() {
 
         <section className="flex w-full relative z-10 flex-col justify-center px-4 sm:px-8 lg:px-20 pt-32 pb-16 lg:py-20 min-h-screen items-center text-center">
 
-          <div className="w-full max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center text-left">
+          <div className="w-full max-w-[1000px] mx-auto flex flex-col items-center">
 
-            {/* Left: Hero Copy */}
-            <div className="flex flex-col items-start pr-0 lg:pr-8">
+            {/* Hero Copy */}
+            <div className="flex flex-col items-center">
               {/* Badge */}
               <span className="inline-block px-5 py-2 bg-white/10 text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] rounded-full mb-8 backdrop-blur-md border border-white/10">
                 Transforming Industrial Waste
               </span>
 
               {/* Headline */}
-              <h1 className="text-[3rem] sm:text-[4rem] lg:text-[5rem] leading-[1.05] font-headline font-black text-white mb-8 drop-shadow-2xl tracking-tighter">
+              <h1 className="text-[3.5rem] sm:text-[4.5rem] lg:text-[6rem] leading-[1.05] font-headline font-black text-white mb-8 drop-shadow-2xl tracking-tighter">
                 INDIA'S SMART <br /> <span className="text-emerald-400">E-WASTE</span> AUCTION
               </h1>
 
               {/* Subtext */}
-              <p className="text-white/70 text-[1rem] lg:text-[1.2rem] font-medium leading-relaxed mb-12 max-w-lg">
+              <p className="text-white/70 text-[1.1rem] lg:text-[1.3rem] font-medium leading-relaxed mb-12 max-w-2xl">
                 Transparent bidding, verified recyclers, and full EPR compliance. Sell your scrap at true market value directly on our secure platform.
               </p>
 
-              {/* Trust Indicators */}
-              <div className="flex flex-col sm:flex-row gap-6 sm:gap-10 pt-8 border-t border-white/10 w-full">
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-emerald-400 text-[24px]">verified</span>
-                  <span className="text-white/80 text-xs font-bold uppercase tracking-widest">CPCB Authorized Recyclers</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-emerald-400 text-[24px]">balance</span>
-                  <span className="text-white/80 text-xs font-bold uppercase tracking-widest">Transparent Live Bidding</span>
-                </div>
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-5 mb-16 w-full sm:w-auto">
+                <button 
+                  onClick={() => router.push('/get-started')}
+                  className="group relative px-10 py-5 bg-emerald-600 rounded-2xl text-white font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-emerald-900/40 hover:bg-emerald-500 hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-3"
+                >
+                  <span className="material-symbols-outlined text-xl">add_shopping_cart</span>
+                  Post E-Waste
+                </button>
+                <button 
+                  onClick={() => router.push('/get-started')}
+                  className="group relative px-10 py-5 bg-white/5 border-2 border-white/20 rounded-2xl text-white font-black text-sm uppercase tracking-[0.2em] hover:bg-white hover:text-slate-900 hover:border-white hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-3 overflow-hidden"
+                >
+                  <span className="material-symbols-outlined text-xl">verified_user</span>
+                  Join as Vendor
+                </button>
               </div>
-            </div>
 
-            {/* Right: Auth Card */}
-            <div className="w-full bg-white rounded-[2.5rem] shadow-2xl p-8 sm:p-12 relative overflow-hidden border border-slate-100">
-              <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-emerald-50 rounded-full blur-[40px] pointer-events-none" />
-
-              <div className="relative z-10 w-full">
-                <AnimatePresence mode="wait">
-                  {tab === "register" ? (
-                    <motion.div
-                      key="register"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="space-y-8 w-full"
-                    >
-                      <div className="space-y-2">
-                        <h3 className="text-3xl font-black text-slate-900 leading-tight">Join We Connect</h3>
-                        <p className="text-slate-500 text-sm font-medium">Select your role to start disposing responsibly.</p>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-5">
-                        <button
-                          onClick={() => router.push('/get-started')}
-                          className="group relative p-8 bg-emerald-600 rounded-3xl text-left transition-all hover:bg-emerald-700 hover:shadow-2xl hover:shadow-emerald-900/20 overflow-hidden active:scale-[0.98]"
-                        >
-                          <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-125 transition-transform" />
-                          <div className="relative z-10 flex items-center gap-6">
-                            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md">
-                              <span className="material-symbols-outlined text-white text-3xl">add_shopping_cart</span>
-                            </div>
-                            <div>
-                              <p className="text-white font-black text-xl">Post E-Waste</p>
-                              <p className="text-white/70 text-xs font-bold uppercase tracking-[0.2em] mt-1">For Clients & Corporates</p>
-                            </div>
-                            <span className="material-symbols-outlined text-white/40 ml-auto group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                          </div>
-                        </button>
-
-                        <button
-                          onClick={() => router.push('/get-started')}
-                          className="group relative p-8 bg-white border-2 border-slate-100 rounded-3xl text-left transition-all hover:border-blue-600 hover:shadow-2xl hover:shadow-blue-900/10 overflow-hidden active:scale-[0.98]"
-                        >
-                          <div className="relative z-10 flex items-center gap-6">
-                            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center transition-colors group-hover:bg-blue-600">
-                              <span className="material-symbols-outlined text-blue-600 text-3xl group-hover:text-white transition-colors">verified_user</span>
-                            </div>
-                            <div>
-                              <p className="text-slate-900 font-black text-xl">Join as Vendor</p>
-                              <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.2em] mt-1">For Authorized Recyclers</p>
-                            </div>
-                            <span className="material-symbols-outlined text-slate-300 ml-auto group-hover:translate-x-1 transition-transform group-hover:text-blue-600">arrow_forward</span>
-                          </div>
-                        </button>
-                      </div>
-
-                      <div className="pt-8 border-t border-slate-100 text-center">
-                        <button
-                          onClick={() => setTab("login")}
-                          className="text-xs text-slate-400 font-black uppercase tracking-[0.2em] hover:text-emerald-600 transition-colors flex items-center justify-center gap-3 w-full"
-                        >
-                          Already have an account? <span className="text-emerald-600 underline">Login to Portal</span>
-                        </button>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="login"
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      className="space-y-8 w-full"
-                    >
-                      <div className="space-y-2">
-                        <h3 className="text-2xl font-black text-slate-900">Access Portal</h3>
-                        <p className="text-slate-500 text-sm font-medium">Select your portal to continue with secured login.</p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        {([
-                          ["client", "corporate_fare", "Client", "#1E8E3E"],
-                          ["vendor", "local_shipping", "Vendor", "#0B5ED7"],
-                          ["user", "person", "Individual", "#FFC107"],
-                          ...(isAdminMode ? [["admin", "admin_panel_settings", "Admin", "#0f172a"]] : [])
-                        ] as [string, string, string, string][])
-                          .map(([r, icon, title, color]) => (
-                            <button key={r} type="button" onClick={() => router.push(`/${r}-login`)}
-                              suppressHydrationWarning
-                              className="group p-5 rounded-2xl border-2 border-slate-50 bg-slate-50/50 text-left transition-all hover:border-slate-900 hover:bg-white active:scale-[0.98]">
-                              <div className="w-10 h-10 rounded-xl mb-4 flex items-center justify-center bg-white shadow-sm ring-1 ring-slate-200 group-hover:ring-slate-900 transition-all">
-                                <span className="material-symbols-outlined text-xl" style={{ color }}>{icon}</span>
-                              </div>
-                              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-slate-900 transition-colors">{title}</p>
-                            </button>
-                          ))}
-                      </div>
-
-                      <div className="pt-6 border-t border-slate-100">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] text-center mb-6">Quick Access Demo</p>
-                        <div className="space-y-3">
-                          {([
-                            ["Client", "client@weconnect.com", "password", "#1E8E3E"],
-                            ["Vendor", "vendor@weconnect.com", "password", "#0B5ED7"],
-                            ["Guest", "guest@weconnect.com", "password", "#FFC107"],
-                            ["Admin", "admin@weconnect.com", "password", "#0f172a"]
-                          ] as const).map(([label, email, pw, color]) => (
-                            <button key={email} onClick={() => {
-                              login(label.toLowerCase() as any, email);
-                              if (label === 'Client') router.push('/client/dashboard');
-                              else if (label === 'Vendor') router.push('/vendor/dashboard');
-                              else if (label === 'Admin') router.push('/admin/dashboard');
-                              else router.push('/consumer/pickup');
-                            }}
-                              className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between group hover:bg-white hover:border-slate-900 transition-all">
-                              <div className="flex items-center gap-4">
-                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-                                <div className="text-left">
-                                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-900">{label} Portal</p>
-                                  <p className="text-[9px] font-bold text-slate-400 lowercase">{email} / {pw}</p>
-                                </div>
-                              </div>
-                              <span className="material-symbols-outlined text-slate-300 group-hover:text-slate-900 text-lg transition-colors">login</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="pt-6 text-center">
-                        <button onClick={() => setTab("register")} className="text-[10px] font-black text-slate-400 hover:text-emerald-600 transition-colors uppercase tracking-[0.2em] flex items-center justify-center gap-2 w-full">
-                          <span className="material-symbols-outlined text-sm">arrow_back</span> Back to Registration
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+              {/* Trust Indicators */}
+              <div className="flex flex-col sm:flex-row gap-8 sm:gap-12 pt-10 border-t border-white/10 w-full justify-center">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-emerald-400 text-[26px]">verified</span>
+                  <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em]">CPCB Authorized Recyclers</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-emerald-400 text-[26px]">balance</span>
+                  <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em]">Transparent Live Bidding</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-emerald-400 text-[26px]">shield</span>
+                  <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em]">Secure Escrow Payments</span>
+                </div>
               </div>
             </div>
           </div>

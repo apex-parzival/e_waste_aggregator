@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     "Connecting Waste to Value. Sell your e-waste to verified recyclers through a transparent bidding system. Ensure compliance, maximize value, and simplify disposal.",
   keywords: ["e-waste", "recycling", "circular economy", "sustainable", "bidding", "compliance"],
   icons: {
-    icon: "/favicon.png",
+    icon: "/favicon.ico",
   },
 };
 

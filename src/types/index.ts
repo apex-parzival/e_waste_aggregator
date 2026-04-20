@@ -1,4 +1,4 @@
-export type UserRole = 'client' | 'vendor' | 'admin' | 'guest';
+export type UserRole = 'client' | 'vendor' | 'admin' | 'guest' | 'consumer';
 
 export interface UploadedDoc {
   name: string;
@@ -123,7 +123,7 @@ export interface AppState {
   bids: Bid[];
   users: User[];
   notifications: Notification[];
-  pendingOnboardingRole?: 'client' | 'vendor';
+  pendingOnboardingRole?: 'client' | 'vendor' | 'consumer';
   pendingOnboardingEmail?: string;
   pendingOnboardingPassword?: string;
   isSidebarOpen: boolean;

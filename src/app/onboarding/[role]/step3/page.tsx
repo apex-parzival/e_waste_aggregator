@@ -54,21 +54,24 @@ export default function OnboardingStep3() {
   };
 
   const fillDemo = () => {
+    const isConsumer = effectiveRole === "consumer";
     setForm({
-      accountHolderName: "GreenCycle Pvt Ltd",
+      accountHolderName: isConsumer ? "Rahul Sharma" : "GreenCycle Pvt Ltd",
       bankName: "HDFC Bank",
       accountNumber: "50100123456789",
       ifscCode: "HDFC0001234",
-      accountType: "current",
+      accountType: isConsumer ? "savings" : "current",
     });
     setConfirmAccount("50100123456789");
     setBranchName("HDFC Bank - Koramangala Branch");
+    setChequeFile(isConsumer ? "cancelled-cheque-rahul.pdf" : null);
     setErrors({});
   };
 
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.accountHolderName?.trim()) e.accountHolderName = "Required";
+    if (effectiveRole === "consumer" && !chequeFile) e.cheque = "Cancelled cheque is required for individuals";
     return e;
   };
 
@@ -191,7 +194,7 @@ export default function OnboardingStep3() {
         <div className="card p-6">
           <h3 className="text-sm font-black uppercase tracking-widest text-[color:var(--color-on-surface-variant)] mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined text-base text-[color:var(--color-primary)]">note</span>
-            Cancelled Cheque (Optional)
+            Cancelled Cheque {effectiveRole === "consumer" ? "*" : "(Optional)"}
           </h3>
           {chequeFile ? (
             <div className="flex items-center gap-3 p-3 bg-[color:var(--color-primary-fixed)]/10 rounded-xl">
@@ -217,6 +220,7 @@ export default function OnboardingStep3() {
                 onChange={e => { if (e.target.files?.[0]) setChequeFile(e.target.files[0].name); }} />
             </div>
           )}
+          {errors.cheque && <p className="text-red-500 text-xs mt-2 font-bold">{errors.cheque}</p>}
         </div>
 
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">

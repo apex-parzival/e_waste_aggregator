@@ -55,22 +55,23 @@ export default function OnboardingStep1() {
 
   const fillDemo = () => {
     const isVendor = effectiveRole === "vendor";
+    const isConsumer = effectiveRole === "consumer";
     setForm({
-      companyName: isVendor ? "GreenCycle Pvt Ltd" : "Accenture India Ltd",
-      contactPerson: isVendor ? "Rajesh Kumar" : "Sanjay Mehta",
-      email: pendingOnboardingEmail || (isVendor ? "ops@greencycle.in" : "procurement@accenture.com"),
+      companyName: isVendor ? "GreenCycle Pvt Ltd" : isConsumer ? "Rahul Sharma" : "Accenture India Ltd",
+      contactPerson: isVendor ? "Rajesh Kumar" : isConsumer ? "Rahul Sharma" : "Sanjay Mehta",
+      email: pendingOnboardingEmail || (isVendor ? "ops@greencycle.in" : isConsumer ? "rahul@example.com" : "procurement@accenture.com"),
       phone: "+91 98765 43210",
       address: "Plot 45, Peenya Industrial Area, 2nd Phase",
       city: "Bangalore",
       state: "Karnataka",
       pincode: "560058",
-      companyRegistrationNo: "CIN-U72900KA2020PTC136422",
-      processingCapacity: "500 MT/month",
+      companyRegistrationNo: (isVendor || !isConsumer) ? "CIN-U72900KA2020PTC136422" : "",
+      processingCapacity: isVendor ? "500 MT/month" : "",
       materialSpecializations: isVendor ? ["Circuit Boards", "Li-ion Batteries", "Server Equipment"] : [],
       cpcbNo: isVendor ? "CPCB/EWRE/KAR/2024/001" : "",
-      gstin: !isVendor ? "29AABCU9603R1ZX" : "",
-      industrySector: !isVendor ? "IT & Technology" : "",
-      numberOfEmployees: !isVendor ? "500+" : "",
+      gstin: (!isVendor && !isConsumer) ? "29AABCU9603R1ZX" : "",
+      industrySector: (!isVendor && !isConsumer) ? "IT & Technology" : "",
+      numberOfEmployees: (!isVendor && !isConsumer) ? "500+" : "",
     });
     setErrors({});
   };
@@ -95,7 +96,7 @@ export default function OnboardingStep1() {
       <div className="mb-8">
         <span className="inline-flex items-center gap-2 bg-[color:var(--color-secondary-container)] text-[color:var(--color-on-secondary-container)] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
           <span className="material-symbols-outlined text-sm">person_pin</span>
-          {effectiveRole === "vendor" ? "Vendor" : "Client"} Registration
+          {effectiveRole === "vendor" ? "Vendor" : effectiveRole === "consumer" ? "Individual" : "Client"} Registration
         </span>
         <h1 className="text-3xl font-headline font-extrabold text-[color:var(--color-on-surface)] tracking-tight">
           Company Profile
@@ -122,19 +123,21 @@ export default function OnboardingStep1() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
-              <label className="label">Company / Organization Name *</label>
+              <label className="label">{effectiveRole === 'consumer' ? 'Full Name *' : 'Company / Organization Name *'}</label>
               <input className={`input-base ${errors.companyName ? "ring-2 ring-red-400" : ""}`}
                 value={form.companyName} onChange={e => set("companyName", e.target.value)}
                 placeholder="e.g. Green Solutions Pvt Ltd" />
               {errors.companyName && <p className="text-red-500 text-xs mt-1">{errors.companyName}</p>}
             </div>
-            <div>
-              <label className="label">Contact Person Name *</label>
-              <input className={`input-base ${errors.contactPerson ? "ring-2 ring-red-400" : ""}`}
-                value={form.contactPerson} onChange={e => set("contactPerson", e.target.value)}
-                placeholder="Authorized signatory name" />
-              {errors.contactPerson && <p className="text-red-500 text-xs mt-1">{errors.contactPerson}</p>}
-            </div>
+            {effectiveRole !== 'consumer' && (
+              <div>
+                <label className="label">Contact Person Name *</label>
+                <input className={`input-base ${errors.contactPerson ? "ring-2 ring-red-400" : ""}`}
+                  value={form.contactPerson} onChange={e => set("contactPerson", e.target.value)}
+                  placeholder="Authorized signatory name" />
+                {errors.contactPerson && <p className="text-red-500 text-xs mt-1">{errors.contactPerson}</p>}
+              </div>
+            )}
             <div>
               <label className="label">Business Email *</label>
               <input type="email" className={`input-base ${errors.email ? "ring-2 ring-red-400" : ""}`}
@@ -239,7 +242,7 @@ export default function OnboardingStep1() {
               </div>
             </div>
           </div>
-        ) : (
+        ) : effectiveRole === "client" ? (
           <div className="card p-6 space-y-5">
             <h3 className="text-sm font-black uppercase tracking-widest text-[color:var(--color-on-surface-variant)] flex items-center gap-2">
               <span className="material-symbols-outlined text-base text-[color:var(--color-primary)]">domain</span>
@@ -270,7 +273,7 @@ export default function OnboardingStep1() {
               </div>
             </div>
           </div>
-        )}
+        ) : null}
 
         <button type="submit" className="btn-tertiary w-full py-4 rounded-xl text-sm font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg">
           Continue to Document Upload

@@ -13,13 +13,21 @@ export default function GetStartedPage() {
   const { login } = useApp();
   
   // States
+  const [mounted, setMounted] = useState(false);
   const [tab, setTab] = useState<AuthTab>("login");
   const [role, setRole] = useState<"client" | "vendor">("client");
+  const [clientType, setClientType] = useState<"corporate" | "individual">("corporate");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null; // Prevent hydration mismatch by waiting for mount
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +43,8 @@ export default function GetStartedPage() {
         if (role === "client") router.push("/client/dashboard");
         else router.push("/vendor/dashboard");
       } else {
-        router.push(`/onboarding/${role}/step1`);
+        const routeRole = role === "client" ? (clientType === "corporate" ? "client" : "consumer") : "vendor";
+        router.push(`/onboarding/${routeRole}/step1`);
       }
     } catch (err) {
       setError("Authentication failed. Please check your credentials.");
@@ -53,7 +62,7 @@ export default function GetStartedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col lg:flex-row overflow-hidden font-sans">
+    <div className="min-h-screen bg-white flex flex-col lg:flex-row overflow-hidden font-sans" suppressHydrationWarning>
       
       {/* --- LEFT SIDEBAR (Emerald Green) --- */}
       <motion.div 
@@ -163,9 +172,9 @@ export default function GetStartedPage() {
                 className={`p-4 rounded-2xl flex items-center justify-center gap-3 border-2 transition-all ${role === 'client' ? 'border-[#065F46] bg-emerald-50/50 shadow-sm' : 'border-slate-100 bg-white hover:border-slate-200'}`}
               >
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${role === 'client' ? 'bg-[#065F46] text-white' : 'bg-slate-50 text-slate-400'}`}>
-                   <span className="material-symbols-outlined text-[18px]">corporate_fare</span>
+                   <span className="material-symbols-outlined text-[18px]">delete_sweep</span>
                 </div>
-                <span className={`text-xs font-black uppercase tracking-widest ${role === 'client' ? 'text-[#065F46]' : 'text-slate-400'}`}>Corporate</span>
+                <span className={`text-xs font-black uppercase tracking-widest ${role === 'client' ? 'text-[#065F46]' : 'text-slate-400'}`}>Waste Generator</span>
               </button>
               <button 
                 onClick={() => setRole("vendor")}
@@ -178,6 +187,43 @@ export default function GetStartedPage() {
               </button>
             </div>
           </div>
+
+          {/* Registration Type Sub-selection (Only for Waste Generator during Register) */}
+          <AnimatePresence>
+            {tab === 'register' && role === 'client' && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-col space-y-4 pt-2">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <span className="w-1 h-3 bg-[#065F46] rounded-full" />
+                    Registration Type
+                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button 
+                      type="button"
+                      onClick={() => setClientType("corporate")}
+                      className={`p-4 rounded-2xl flex flex-col items-start gap-2 border-2 transition-all ${clientType === 'corporate' ? 'border-[#065F46] bg-emerald-50/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                    >
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${clientType === 'corporate' ? 'text-[#065F46]' : 'text-slate-400'}`}>Corporate</span>
+                      <p className="text-[9px] font-medium text-slate-400 leading-tight text-left">For companies & large industries</p>
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setClientType("individual")}
+                      className={`p-4 rounded-2xl flex flex-col items-start gap-2 border-2 transition-all ${clientType === 'individual' ? 'border-[#065F46] bg-emerald-50/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                    >
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${clientType === 'individual' ? 'text-[#065F46]' : 'text-slate-400'}`}>Individual</span>
+                      <p className="text-[9px] font-medium text-slate-400 leading-tight text-left">For home users & households</p>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Form */}
           <form onSubmit={handleAuth} className="space-y-6">

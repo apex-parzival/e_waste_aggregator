@@ -41,13 +41,19 @@ const CLIENT_DOCS: DocSlot[] = [
   { key: "e_waste_declaration", label: "E-Waste Declaration", description: "Signed E-Waste Declaration Form", required: true, icon: "gavel" },
 ];
 
+const CONSUMER_DOCS: DocSlot[] = [
+  { key: "aadhar_card", label: "Aadhar Card", description: "Front and back scan of your Aadhar card", required: true, icon: "badge" },
+  { key: "pan_card", label: "PAN Card", description: "Clear scan of your personal PAN card", required: true, icon: "credit_card" },
+  { key: "gst_card", label: "GST Card / Registration", description: "GST registration certificate (if applicable)", required: true, icon: "receipt_long" },
+];
+
 export default function OnboardingStep2() {
   const params = useParams();
   const role = params.role as string;
   const router = useRouter();
   const { currentUser, pendingOnboardingRole, saveOnboardingDocuments } = useApp();
   const effectiveRole = role || pendingOnboardingRole || currentUser?.role || "client";
-  const slots = effectiveRole === "vendor" ? VENDOR_DOCS : CLIENT_DOCS;
+  const slots = effectiveRole === "vendor" ? VENDOR_DOCS : effectiveRole === "consumer" ? CONSUMER_DOCS : CLIENT_DOCS;
 
   const [uploads, setUploads] = useState<Record<string, UploadedDoc | null>>({});
   const [dragging, setDragging] = useState<string | null>(null);
