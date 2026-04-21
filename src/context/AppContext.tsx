@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Listing, Bid, AppState, UserRole, Notification, OnboardingProfile, BankDetails, UploadedDoc } from '@/types';
+import { User, Listing, Bid, AppState, UserRole, Notification, OnboardingProfile, BankDetails, UploadedDoc, AuditInvitation, VendorRating } from '@/types';
 
 interface AppContextType extends AppState {
   login: (role: UserRole, name: string) => void;
@@ -28,15 +28,37 @@ interface AppContextType extends AppState {
   transitionAuctionPhase: (listingId: string, nextPhase: Listing['auctionPhase']) => void;
   addClosingDocument: (listingId: string, doc: { name: string; url: string; type: string; timestamp: string }) => void;
   updateUserProfile: (updates: Partial<User>) => void;
+  // Audit flow
+  auditInvitations: AuditInvitation[];
+  sendAuditInvitations: (listingId: string, vendorIds: string[], spocName: string, spocPhone: string, siteAddress: string) => void;
+  respondToAuditInvitation: (auditId: string, status: 'accepted' | 'declined') => void;
+  completeAudit: (auditId: string, productMatch: boolean, remarks: string) => void;
+  // Final quote flow
+  submitFinalQuote: (listingId: string, productQuoteUrl: string, letterheadUrl: string) => void;
+  approveFinalQuote: (listingId: string) => void;
+  rejectFinalQuote: (listingId: string, remarks: string) => void;
+  // Payment flow
+  submitPaymentProof: (listingId: string, proofUrl: string, utrNumber: string) => void;
+  confirmPayment: (listingId: string) => void;
+  // Compliance flow
+  submitComplianceDocs: (listingId: string, docs: Partial<Listing>) => void;
+  verifyCompliance: (listingId: string) => void;
+  // Rating flow
+  vendorRatings: VendorRating[];
+  rateVendor: (listingId: string, vendorId: string, vendorName: string, rating: number, auditR: number, timelinessR: number, complianceR: number, comment: string) => void;
   changePassword: (newPassword: string) => void;
   deleteAccount: () => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (open: boolean) => void;
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: (collapsed: boolean) => void;
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'weconnect_state_v11';
+const STORAGE_KEY = 'weconnect_state_v13';
 
 const MOCK_LISTINGS: Listing[] = [
   {
@@ -148,7 +170,111 @@ const MOCK_LISTINGS: Listing[] = [
     sealedBidEndDate: '2026-04-20T17:00:00.000Z',
     invitationDeadline: '2026-04-21T18:00:00.000Z',
     images: ['https://images.unsplash.com/photo-1547082299-de196ea013d6?auto=format&fit=crop&w=800&q=80']
-  }
+  },
+
+  // ── POST-AUCTION DEMO LISTINGS ──────────────────────────────────────────
+  // Stage 1: Auction done, vendor submitted final quote → client must approve
+  {
+    id: 'ECO18992', title: 'Network Switches & Patch Panels (EOL Batch)', category: 'IT Equipment',
+    weight: 620, location: 'Koramangala, Bangalore', status: 'completed', userId: 'C1',
+    userName: 'Tech Corp Ltd', description: 'End-of-life Cisco Catalyst switches and 48-port patch panels. 28 units total. Factory reset. Suitable for copper/PCB recovery.',
+    createdAt: '2026-04-10T11:00:00.000Z', urgency: 'medium', bidCount: 5, viewCount: 98,
+    auctionPhase: 'completed', basePrice: 95000, bidIncrement: 2000, highestEmdAmount: 12000,
+    auctionStartDate: '2026-04-17T10:00:00.000Z', auctionEndDate: '2026-04-18T18:00:00.000Z',
+    winnerVendorId: 'V1', winnerVendorName: 'Green Recyclers Pvt Ltd',
+    finalQuoteStatus: 'submitted',
+    finalQuoteProductUrl: undefined,
+    finalQuoteLetterheadUrl: undefined,
+    finalQuoteSubmittedAt: '2026-04-20T14:30:00.000Z',
+    images: ['https://images.unsplash.com/photo-1558494949-ef010cbdcc48?auto=format&fit=crop&w=800&q=80']
+  },
+
+  // Stage 2: Final quote approved, payment proof uploaded → admin to confirm
+  {
+    id: 'ECO18993', title: 'UPS Battery Banks (Industrial Grade)', category: 'Batteries',
+    weight: 1850, location: 'Electronic City, Bangalore', status: 'completed', userId: 'C2',
+    userName: 'Global Infra Pvt Ltd', description: 'Industrial UPS battery banks (12V/100Ah VRLA blocks). 96 units. Capacity degraded below 60%. Lead content high — needs authorised recycler.',
+    createdAt: '2026-04-05T08:00:00.000Z', urgency: 'high', bidCount: 9, viewCount: 178,
+    auctionPhase: 'completed', basePrice: 220000, bidIncrement: 5000, highestEmdAmount: 30000,
+    auctionStartDate: '2026-04-14T09:00:00.000Z', auctionEndDate: '2026-04-15T18:00:00.000Z',
+    winnerVendorId: 'V3', winnerVendorName: 'RecycleFirst India',
+    finalQuoteStatus: 'approved',
+    finalQuoteSubmittedAt: '2026-04-17T10:00:00.000Z',
+    paymentStatus: 'proof_uploaded',
+    paymentClientAmount: 237500, paymentCommissionAmount: 12500,
+    paymentUTR: 'ICIC2604190082345', paymentSubmittedAt: '2026-04-19T16:45:00.000Z',
+    images: ['https://images.unsplash.com/photo-1563298723-dcfebaa392e3?auto=format&fit=crop&w=800&q=80']
+  },
+
+  // V1 payment pending — client just approved quote, vendor must pay (payment flow demo for vendor@)
+  {
+    id: 'ECO18996', title: 'Workstation PC Lot (Engineering Dept Refresh)', category: 'Laptops & PCs',
+    weight: 940, location: 'Indiranagar, Bangalore', status: 'completed', userId: 'C1',
+    userName: 'Tech Corp Ltd', description: 'Dell Precision workstations (Gen 7-9). 22 units. Drives wiped. BIOS locked. Hard drives removed and shredded.',
+    createdAt: '2026-04-08T11:00:00.000Z', urgency: 'medium', bidCount: 4, viewCount: 71,
+    auctionPhase: 'completed', basePrice: 80000, bidIncrement: 2000, highestEmdAmount: 10000,
+    winnerVendorId: 'V1', winnerVendorName: 'Green Recyclers Pvt Ltd',
+    finalQuoteStatus: 'approved',
+    finalQuoteSubmittedAt: '2026-04-19T09:00:00.000Z',
+    paymentStatus: 'pending',
+    paymentClientAmount: 109750, paymentCommissionAmount: 5750,
+    images: ['https://images.unsplash.com/photo-1547082299-de196ea013d6?auto=format&fit=crop&w=800&q=80']
+  },
+
+  // V1 payment confirmed, compliance docs pending — for vendor compliance flow demo
+  {
+    id: 'ECO18997', title: 'Mixed PCB Scrap — R&D Lab Decommission', category: 'Circuit Boards',
+    weight: 380, location: 'HSR Layout, Bangalore', status: 'completed', userId: 'C1',
+    userName: 'Tech Corp Ltd', description: 'PCBs from decommissioned R&D lab equipment. Includes motherboards, daughter cards, and memory modules. Lead-solder boards included.',
+    createdAt: '2026-04-02T10:00:00.000Z', urgency: 'low', bidCount: 3, viewCount: 55,
+    auctionPhase: 'completed', basePrice: 55000, bidIncrement: 1000,
+    winnerVendorId: 'V1', winnerVendorName: 'Green Recyclers Pvt Ltd',
+    finalQuoteStatus: 'approved',
+    paymentStatus: 'confirmed',
+    paymentClientAmount: 68400, paymentCommissionAmount: 3600,
+    paymentUTR: 'ICIC2604080033221',
+    complianceStatus: undefined,
+    pickupScheduledDate: undefined,
+    images: ['https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80']
+  },
+
+  // Stage 3: Payment confirmed, compliance docs uploaded → admin to verify
+  {
+    id: 'ECO18994', title: 'Decommissioned Data Centre Cooling Units', category: 'Other',
+    weight: 3400, location: 'Whitefield, Bangalore', status: 'completed', userId: 'C1',
+    userName: 'Tech Corp Ltd', description: 'Precision air conditioning units from decommissioned DC. Compressors removed. Aluminium fins, copper coils, and steel enclosures.',
+    createdAt: '2026-03-28T09:00:00.000Z', urgency: 'low', bidCount: 6, viewCount: 133,
+    auctionPhase: 'completed', basePrice: 180000, bidIncrement: 4000, highestEmdAmount: 25000,
+    winnerVendorId: 'V2', winnerVendorName: 'EcoMetal Solutions',
+    finalQuoteStatus: 'approved',
+    paymentStatus: 'confirmed',
+    paymentClientAmount: 285500, paymentCommissionAmount: 15000,
+    paymentUTR: 'HDFC2603290056781',
+    complianceStatus: 'documents_uploaded',
+    pickupScheduledDate: '2026-04-18T08:00:00.000Z',
+    images: ['https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?auto=format&fit=crop&w=800&q=80']
+  },
+
+  // Stage 4: Fully completed — compliance verified, docs downloadable by client
+  {
+    id: 'ECO18995', title: 'Enterprise Printer Fleet Disposal (60 Units)', category: 'Other',
+    weight: 720, location: 'MG Road, Bangalore', status: 'completed', userId: 'C1',
+    userName: 'Tech Corp Ltd', description: 'HP and Xerox laser printers. Toner cartridges removed. Drums wiped. Includes 8 heavy-duty production printers.',
+    createdAt: '2026-03-10T10:00:00.000Z', urgency: 'low', bidCount: 4, viewCount: 87,
+    auctionPhase: 'completed', basePrice: 42000, bidIncrement: 1000,
+    winnerVendorId: 'V1', winnerVendorName: 'Green Recyclers Pvt Ltd',
+    finalQuoteStatus: 'approved',
+    paymentStatus: 'confirmed',
+    paymentClientAmount: 49400, paymentCommissionAmount: 2600,
+    complianceStatus: 'verified',
+    pickupScheduledDate: '2026-04-10T08:00:00.000Z',
+    form6Url: 'data:text/plain;base64,Rm9ybTY=',
+    weightSlipEmptyUrl: 'data:text/plain;base64,V2VpZ2h0RW1wdHk=',
+    weightSlipLoadedUrl: 'data:text/plain;base64,V2VpZ2h0TG9hZGVk',
+    recyclingCertUrl: 'data:text/plain;base64,UmVjeWNsaW5nQ2VydA==',
+    disposalCertUrl: 'data:text/plain;base64,RGlzcG9zYWxDZXJ0',
+    images: ['https://images.unsplash.com/photo-1612198188060-c7c2a3b66eae?auto=format&fit=crop&w=800&q=80']
+  },
 ];
 
 const MOCK_BIDS: Bid[] = [
@@ -172,6 +298,13 @@ const MOCK_BIDS: Bid[] = [
   { id: 'B10', listingId: 'ECO18985', vendorId: 'V2', vendorName: 'EcoMetal Solutions', amount: 255000, status: 'pending', type: 'sealed', createdAt: '2026-04-16T14:00:00.000Z' },
   { id: 'CON-B1', listingId: 'CON-L1', vendorId: 'V1', vendorName: 'Green Recyclers Pvt Ltd', amount: 1500, status: 'accepted', type: 'open', createdAt: '2026-04-14T11:00:00.000Z' },
   { id: 'CON-B2', listingId: 'CON-L2', vendorId: 'V2', vendorName: 'EcoMetal Solutions', amount: 450, status: 'pending', type: 'sealed', createdAt: '2026-04-17T15:00:00.000Z' },
+  // Post-auction demo bids — accepted winners
+  { id: 'B14', listingId: 'ECO18992', vendorId: 'V1', vendorName: 'Green Recyclers Pvt Ltd', amount: 105000, status: 'accepted', type: 'open', createdAt: '2026-04-18T17:55:00.000Z' },
+  { id: 'B15', listingId: 'ECO18993', vendorId: 'V3', vendorName: 'RecycleFirst India', amount: 250000, status: 'accepted', type: 'open', createdAt: '2026-04-15T17:58:00.000Z' },
+  { id: 'B16', listingId: 'ECO18994', vendorId: 'V2', vendorName: 'EcoMetal Solutions', amount: 300500, status: 'accepted', type: 'open', createdAt: '2026-04-10T17:57:00.000Z' },
+  { id: 'B17', listingId: 'ECO18995', vendorId: 'V1', vendorName: 'Green Recyclers Pvt Ltd', amount: 52000, status: 'accepted', type: 'open', createdAt: '2026-03-25T17:50:00.000Z' },
+  { id: 'B18', listingId: 'ECO18996', vendorId: 'V1', vendorName: 'Green Recyclers Pvt Ltd', amount: 115500, status: 'accepted', type: 'open', createdAt: '2026-04-17T16:40:00.000Z' },
+  { id: 'B19', listingId: 'ECO18997', vendorId: 'V1', vendorName: 'Green Recyclers Pvt Ltd', amount: 72000, status: 'accepted', type: 'open', createdAt: '2026-04-06T14:30:00.000Z' },
 ];
 
 const MOCK_USERS: User[] = [
@@ -239,6 +372,25 @@ const MOCK_USERS: User[] = [
   { id: 'CON1', name: 'Rahul Sharma', role: 'consumer', email: 'consumer@weconnect.com', status: 'active', phone: '+91 91234 56789', registeredAt: '2026-04-16T13:00:00.000Z', onboardingStep: 5 },
 ];
 
+const MOCK_AUDIT_INVITATIONS: AuditInvitation[] = [
+  {
+    id: 'AUD1', listingId: 'ECO18990', vendorId: 'V1', vendorName: 'Green Recyclers Pvt Ltd',
+    status: 'accepted', invitedAt: '2026-04-19T12:00:00.000Z', scheduledDate: '2026-04-22T10:00:00.000Z',
+    spocName: 'Ravi Kumar', spocPhone: '+91 98001 11222', siteAddress: 'MG Road, Bangalore',
+  },
+  {
+    id: 'AUD2', listingId: 'ECO18990', vendorId: 'V3', vendorName: 'RecycleFirst India',
+    status: 'completed', invitedAt: '2026-04-19T12:00:00.000Z', scheduledDate: '2026-04-21T09:00:00.000Z',
+    spocName: 'Ravi Kumar', spocPhone: '+91 98001 11222', siteAddress: 'MG Road, Bangalore',
+    productMatch: true, auditRemarks: 'All 40 desktop units verified. Condition matches description.', completedAt: '2026-04-21T11:30:00.000Z',
+  },
+  {
+    id: 'AUD3', listingId: 'ECO18950', vendorId: 'V2', vendorName: 'EcoMetal Solutions',
+    status: 'invited', invitedAt: '2026-04-20T09:00:00.000Z',
+    spocName: 'Anita Sharma', spocPhone: '+91 98002 33444', siteAddress: 'Whitefield, Bangalore',
+  },
+];
+
 const MOCK_NOTIFICATIONS: Notification[] = [
   { id: 'N1', userId: 'C1', type: 'bid_received', title: 'New Bid Received', message: 'Green Recyclers placed a bid of ₹22,500 on your CRT Monitor listing.', read: false, createdAt: '2026-04-16T15:45:00.000Z' },
   { id: 'N2', userId: 'C1', type: 'bid_received', title: 'New Bid Received', message: 'EcoMetal Solutions placed a bid of ₹21,500 on your CRT Monitor listing.', read: false, createdAt: '2026-04-16T15:15:00.000Z' },
@@ -250,16 +402,37 @@ const MOCK_NOTIFICATIONS: Notification[] = [
   { id: 'CON-N2', userId: 'CON1', type: 'general', title: 'New Achievement 🌳', message: 'You have neutralized 42KG of Carbon this month. Check your impact score!', read: false, createdAt: '2026-04-17T10:00:00.000Z' },
 ];
 
+const MOCK_VENDOR_RATINGS: VendorRating[] = [
+  {
+    id: 'RV1', listingId: 'ECO18995', vendorId: 'V1', vendorName: 'Green Recyclers Pvt Ltd',
+    clientId: 'C1', clientName: 'Tech Corp Ltd',
+    overallRating: 5, auditRating: 5, timelinessRating: 4, complianceRating: 5,
+    comment: 'Excellent service. Audit was thorough, pickup was on time, and all compliance documents submitted without any follow-up.',
+    createdAt: '2026-04-12T10:00:00.000Z',
+  },
+  {
+    id: 'RV2', listingId: 'ECO18994', vendorId: 'V2', vendorName: 'EcoMetal Solutions',
+    clientId: 'C1', clientName: 'Tech Corp Ltd',
+    overallRating: 4, auditRating: 4, timelinessRating: 5, complianceRating: 3,
+    comment: 'Good pickup coordination. Compliance documents needed one reminder but were submitted correctly.',
+    createdAt: '2026-04-20T11:00:00.000Z',
+  },
+];
+
 const initialState: AppState = {
   currentUser: null,
   listings: [],
   bids: [],
   users: [],
   notifications: [],
+  auditInvitations: [],
+  vendorRatings: [],
   pendingOnboardingRole: undefined,
   pendingOnboardingEmail: undefined,
   pendingOnboardingPassword: undefined,
   isSidebarOpen: false,
+  isSidebarCollapsed: false,
+  theme: 'light',
 };
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -278,6 +451,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           users: parsed.users?.length ? parsed.users : initialState.users,
           bids: parsed.bids?.length ? parsed.bids : initialState.bids,
           notifications: parsed.notifications?.length ? parsed.notifications : initialState.notifications,
+          auditInvitations: parsed.auditInvitations?.length ? parsed.auditInvitations : initialState.auditInvitations,
           currentUser: parsed.currentUser || null,
         }));
       }
@@ -304,7 +478,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           listings: MOCK_LISTINGS,
           bids: MOCK_BIDS,
           users: MOCK_USERS,
-          notifications: MOCK_NOTIFICATIONS
+          notifications: MOCK_NOTIFICATIONS,
+          auditInvitations: MOCK_AUDIT_INVITATIONS,
+          vendorRatings: MOCK_VENDOR_RATINGS,
         }));
         return;
       }
@@ -608,16 +784,170 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }));
   };
 
+  const toggleTheme = () => {
+    setState(prev => ({ ...prev, theme: prev.theme === 'light' ? 'dark' : 'light' }));
+  };
+
+  const sendAuditInvitations = (listingId: string, vendorIds: string[], spocName: string, spocPhone: string, siteAddress: string) => {
+    setState(prev => {
+      const newAudits: AuditInvitation[] = vendorIds.map(vId => {
+        const vendor = prev.users.find(u => u.id === vId);
+        return {
+          id: `AUD${Date.now()}${vId}`,
+          listingId, vendorId: vId, vendorName: vendor?.name || vId,
+          status: 'invited', invitedAt: new Date().toISOString(),
+          spocName, spocPhone, siteAddress,
+        };
+      });
+      const newNotifs = vendorIds.map(vId => ({
+        id: `N${Date.now()}${vId}`, userId: vId, type: 'general' as const,
+        title: 'Audit Invitation', message: `You have been invited to conduct a site audit. Please review and respond.`,
+        read: false, createdAt: new Date().toISOString(),
+      }));
+      return {
+        ...prev,
+        auditInvitations: [...prev.auditInvitations, ...newAudits],
+        notifications: [...prev.notifications, ...newNotifs],
+      };
+    });
+  };
+
+  const respondToAuditInvitation = (auditId: string, status: 'accepted' | 'declined') => {
+    setState(prev => ({
+      ...prev,
+      auditInvitations: prev.auditInvitations.map(a =>
+        a.id === auditId ? { ...a, status } : a
+      ),
+    }));
+  };
+
+  const completeAudit = (auditId: string, productMatch: boolean, remarks: string) => {
+    setState(prev => ({
+      ...prev,
+      auditInvitations: prev.auditInvitations.map(a =>
+        a.id === auditId ? { ...a, status: 'completed', productMatch, auditRemarks: remarks, completedAt: new Date().toISOString() } : a
+      ),
+    }));
+  };
+
+  const submitFinalQuote = (listingId: string, productQuoteUrl: string, letterheadUrl: string) => {
+    setState(prev => ({
+      ...prev,
+      listings: prev.listings.map(l => l.id === listingId ? {
+        ...l,
+        finalQuoteStatus: 'submitted',
+        finalQuoteProductUrl: productQuoteUrl,
+        finalQuoteLetterheadUrl: letterheadUrl,
+        finalQuoteSubmittedAt: new Date().toISOString(),
+      } : l),
+    }));
+  };
+
+  const approveFinalQuote = (listingId: string) => {
+    setState(prev => {
+      const winBid = prev.bids.find(b => b.listingId === listingId && b.status === 'accepted');
+      const commission = winBid ? Math.round(winBid.amount * 0.05) : 0;
+      const clientAmount = winBid ? winBid.amount - commission : 0;
+      return {
+        ...prev,
+        listings: prev.listings.map(l => l.id === listingId ? {
+          ...l,
+          finalQuoteStatus: 'approved',
+          paymentStatus: 'pending',
+          paymentClientAmount: clientAmount,
+          paymentCommissionAmount: commission,
+        } : l),
+      };
+    });
+  };
+
+  const rejectFinalQuote = (listingId: string, remarks: string) => {
+    setState(prev => ({
+      ...prev,
+      listings: prev.listings.map(l => l.id === listingId ? {
+        ...l, finalQuoteStatus: 'rejected', finalQuoteRemarks: remarks,
+      } : l),
+    }));
+  };
+
+  const submitPaymentProof = (listingId: string, proofUrl: string, utrNumber: string) => {
+    setState(prev => ({
+      ...prev,
+      listings: prev.listings.map(l => l.id === listingId ? {
+        ...l, paymentStatus: 'proof_uploaded', paymentProofUrl: proofUrl,
+        paymentUTR: utrNumber, paymentSubmittedAt: new Date().toISOString(),
+      } : l),
+    }));
+  };
+
+  const confirmPayment = (listingId: string) => {
+    setState(prev => ({
+      ...prev,
+      listings: prev.listings.map(l => l.id === listingId ? {
+        ...l, paymentStatus: 'confirmed', complianceStatus: 'pending',
+      } : l),
+    }));
+  };
+
+  const submitComplianceDocs = (listingId: string, docs: Partial<Listing>) => {
+    setState(prev => ({
+      ...prev,
+      listings: prev.listings.map(l => l.id === listingId ? {
+        ...l, ...docs, complianceStatus: 'documents_uploaded',
+      } : l),
+    }));
+  };
+
+  const verifyCompliance = (listingId: string) => {
+    setState(prev => ({
+      ...prev,
+      listings: prev.listings.map(l => l.id === listingId ? {
+        ...l, complianceStatus: 'verified', status: 'completed',
+      } : l),
+    }));
+  };
+
+  const rateVendor = (listingId: string, vendorId: string, vendorName: string, overall: number, auditR: number, timelinessR: number, complianceR: number, comment: string) => {
+    setState(prev => {
+      const client = prev.currentUser;
+      if (!client) return prev;
+      const newRating: VendorRating = {
+        id: `RV${Date.now()}`,
+        listingId, vendorId, vendorName,
+        clientId: client.id, clientName: client.name,
+        overallRating: overall,
+        auditRating: auditR,
+        timelinessRating: timelinessR,
+        complianceRating: complianceR,
+        comment,
+        createdAt: new Date().toISOString(),
+      };
+      return { ...prev, vendorRatings: [...(prev.vendorRatings || []), newRating] };
+    });
+  };
+
   return (
     <AppContext.Provider value={{
       ...state,
       login, logout, register, startOnboarding,
       saveOnboardingProfile, saveOnboardingDocuments, saveOnboardingBankDetails, completeOnboarding,
       addListing, addBid, updateListingStatus, updateAuctionPhase, updateBidStatus, updateUserStatus, assignVendor,
-      acceptBid, addNotification, markNotificationRead, editListing,
-      editBid, respondToInvitation, addClosingDocument, updateUserProfile, changePassword, deleteAccount, transitionAuctionPhase,
+      acceptBid, addNotification, markNotificationRead, editListing, editBid,
+      respondToInvitation, transitionAuctionPhase, addClosingDocument,
+      updateUserProfile, changePassword, deleteAccount,
+      auditInvitations: state.auditInvitations ?? [],
+      sendAuditInvitations, respondToAuditInvitation, completeAudit,
+      submitFinalQuote, approveFinalQuote, rejectFinalQuote,
+      submitPaymentProof, confirmPayment,
+      submitComplianceDocs, verifyCompliance,
+      vendorRatings: state.vendorRatings ?? [],
+      rateVendor,
       isSidebarOpen: state.isSidebarOpen ?? false,
       setIsSidebarOpen: (open: boolean) => setState(prev => ({ ...prev, isSidebarOpen: open })),
+      isSidebarCollapsed: state.isSidebarCollapsed ?? false,
+      setIsSidebarCollapsed: (collapsed: boolean) => setState(prev => ({ ...prev, isSidebarCollapsed: collapsed })),
+      theme: state.theme ?? 'light',
+      toggleTheme,
     }}>
       {children}
     </AppContext.Provider>

@@ -1,0 +1,91 @@
+"use client";
+
+import React from "react";
+import { motion } from "framer-motion";
+
+const VENDORS = [
+  { rank: 1, name: 'RecycleX Solutions', revenue: '₹45,80,000', score: 98, initial: 'R' },
+  { rank: 2, name: 'GreenWay Recycling', revenue: '₹32,40,000', score: 96, initial: 'G' },
+  { rank: 3, name: 'EcoTech Solutions', revenue: '₹28,75,000', score: 94, initial: 'E' },
+  { rank: 4, name: 'Waste2Worth Pvt Ltd', revenue: '₹22,10,000', score: 92, initial: 'W' },
+  { rank: 5, name: 'Earth Renewables', revenue: '₹18,60,000', score: 90, initial: 'E' },
+];
+
+const RANK_BADGE = [
+  'bg-yellow-400 text-yellow-900',
+  'bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200',
+  'bg-orange-300 text-orange-900',
+];
+
+function ScoreRing({ score }: { score: number }) {
+  const size = 38;
+  const r = (size - 6) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (score / 100) * circ;
+  const color = score >= 97 ? '#10b981' : score >= 93 ? '#3b82f6' : '#f59e0b';
+
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(148,163,184,0.15)" strokeWidth={4} />
+        <circle
+          cx={size / 2} cy={size / 2} r={r} fill="none"
+          stroke={color} strokeWidth={4}
+          strokeDasharray={circ} strokeDashoffset={offset}
+          strokeLinecap="round"
+        />
+      </svg>
+      <span className="absolute text-[9px] font-black text-slate-900 dark:text-white">{score}%</span>
+    </div>
+  );
+}
+
+export function TopPerformingVendors() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.2 }}
+      className="p-6 rounded-[2rem] bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm h-full flex flex-col"
+    >
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="font-headline font-bold text-slate-900 dark:text-white text-base">Top Performing Vendors</h3>
+        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+          This Month
+          <span className="material-symbols-outlined text-sm">expand_more</span>
+        </button>
+      </div>
+
+      <div className="flex-1 space-y-2">
+        {VENDORS.map((vendor, idx) => (
+          <motion.div
+            key={vendor.rank}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 + idx * 0.07 }}
+            className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-default"
+          >
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0 ${
+              idx < 3 ? RANK_BADGE[idx] : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+            }`}>
+              {vendor.rank}
+            </div>
+            <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center font-black text-emerald-600 dark:text-emerald-400 text-sm shrink-0">
+              {vendor.initial}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{vendor.name}</p>
+              <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{vendor.revenue}</p>
+            </div>
+            <ScoreRing score={vendor.score} />
+          </motion.div>
+        ))}
+      </div>
+
+      <button className="mt-4 w-full h-9 rounded-xl border border-slate-100 dark:border-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+        View All Vendors
+        <span className="material-symbols-outlined text-sm">arrow_forward</span>
+      </button>
+    </motion.div>
+  );
+}

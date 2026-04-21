@@ -151,10 +151,45 @@ Generated: ${new Date().toISOString()}
 }
 
 export default function VendorPickups() {
-  const { bids, listings, users, currentUser } = useApp();
-  const [filter, setFilter] = useState<"all" | "upcoming" | "completed">("all");
+  const { bids, listings, users, currentUser, submitComplianceDocs, editListing } = useApp();
+  const [filter, setFilter] = useState<"all" | "upcoming" | "completed" | "compliance">("all");
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [uploaded, setUploaded] = useState<Set<string>>(new Set());
+  const [complianceModal, setComplianceModal] = useState<{ open: boolean; listingId: string | null }>({ open: false, listingId: null });
+  const [pickupDate, setPickupDate] = useState("");
+  const [compFiles, setCompFiles] = useState<Record<string, File | null>>({
+    form6: null, weightEmpty: null, weightLoaded: null, recycling: null, disposal: null,
+  });
+
+  // Listings ready for compliance (payment confirmed, not yet verified)
+  const complianceListings = listings.filter(l => {
+    const win = bids.find(b => b.listingId === l.id && b.vendorId === currentUser?.id && b.status === "accepted");
+    return win && (l.paymentStatus === "confirmed") && l.complianceStatus !== "verified";
+  });
+
+  const handleComplianceSubmit = async () => {
+    if (!complianceModal.listingId) return;
+    const readFile = (f: File): Promise<string> => new Promise(r => { const fr = new FileReader(); fr.onload = e => r(e.target?.result as string); fr.readAsDataURL(f); });
+    const docs: Record<string, string> = {};
+    if (compFiles.form6) docs.form6Url = await readFile(compFiles.form6);
+    if (compFiles.weightEmpty) docs.weightSlipEmptyUrl = await readFile(compFiles.weightEmpty);
+    if (compFiles.weightLoaded) docs.weightSlipLoadedUrl = await readFile(compFiles.weightLoaded);
+    if (compFiles.recycling) docs.recyclingCertUrl = await readFile(compFiles.recycling);
+    if (compFiles.disposal) docs.disposalCertUrl = await readFile(compFiles.disposal);
+    if (pickupDate) docs.pickupScheduledDate = new Date(pickupDate).toISOString();
+    submitComplianceDocs(complianceModal.listingId, docs);
+    setComplianceModal({ open: false, listingId: null });
+    setCompFiles({ form6: null, weightEmpty: null, weightLoaded: null, recycling: null, disposal: null });
+    setPickupDate("");
+  };
+
+  const COMP_DOCS = [
+    { key: "form6", label: "Form 6", icon: "description", required: true },
+    { key: "weightEmpty", label: "Weight Slip (Empty)", icon: "scale", required: true },
+    { key: "weightLoaded", label: "Weight Slip (Loaded)", icon: "scale", required: true },
+    { key: "recycling", label: "Recycling Certificate", icon: "recycling", required: true },
+    { key: "disposal", label: "Disposal Certificate", icon: "delete_forever", required: false },
+  ] as const;
 
   // Build live pickups from accepted bids
   const wonBids = bids.filter(b => b.vendorId === currentUser?.id && b.status === "accepted");
@@ -187,7 +222,7 @@ export default function VendorPickups() {
   ];
 
   const allPickups = [...livePickups, ...historicalPickups];
-  const filtered = filter === "all" ? allPickups : filter === "upcoming" ? allPickups.filter(p => p.status !== "Completed") : allPickups.filter(p => p.status === "Completed");
+  const filtered = filter === "all" ? allPickups : filter === "upcoming" ? allPickups.filter(p => p.status !== "Completed") : filter === "completed" ? allPickups.filter(p => p.status === "Completed") : [];
 
   const handleDocUpload = async (id: string) => {
     setUploadingId(id);
@@ -234,12 +269,12 @@ export default function VendorPickups() {
 
       {/* Filters */}
       <div className="flex gap-1 p-1 bg-[color:var(--color-surface-container-low)] rounded-xl w-fit">
-        {(["all", "upcoming", "completed"] as const).map(f => (
+        {(["all", "upcoming", "completed", "compliance"] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${
               filter === f ? "bg-white shadow-sm text-[color:var(--color-on-surface)]" : "text-[color:var(--color-on-surface-variant)]"
             }`}>
-            {f}
+            {f}{f === "compliance" && complianceListings.length > 0 && <span className="ml-1 px-1.5 py-0.5 bg-amber-500 text-white rounded-full text-[8px] font-black">{complianceListings.length}</span>}
           </button>
         ))}
       </div>
@@ -247,7 +282,7 @@ export default function VendorPickups() {
       {/* Pickup Cards */}
       <div className="space-y-4">
         {filtered.map(pickup => (
-          <div className="card p-6 hover:shadow-md transition-all">
+          <div key={pickup.id} className="card p-6 hover:shadow-md transition-all">
             <div className="flex items-start gap-5">
               {/* Date Box */}
               <div className="flex flex-col items-center justify-center bg-[color:var(--color-secondary-container)] rounded-xl w-16 h-16 shrink-0 text-center">
@@ -375,7 +410,7 @@ export default function VendorPickups() {
           </div>
         ))}
 
-        {filtered.length === 0 && (
+        {filtered.length === 0 && filter !== "compliance" && (
           <div className="card p-16 text-center">
             <span className="material-symbols-outlined text-6xl text-slate-200 block mb-4">local_shipping</span>
             <h3 className="text-xl font-headline font-bold text-[color:var(--color-on-surface)] mb-2">No Pickups Yet</h3>
@@ -383,6 +418,104 @@ export default function VendorPickups() {
           </div>
         )}
       </div>
+
+      {/* Compliance Tab */}
+      {filter === "compliance" && (
+        <div className="space-y-4">
+          {complianceListings.length === 0 ? (
+            <div className="card p-16 text-center border-2 border-dashed border-slate-200">
+              <span className="material-symbols-outlined text-5xl text-slate-300 block mb-3">verified</span>
+              <p className="font-bold text-slate-600">No compliance submissions pending</p>
+              <p className="text-sm text-slate-400 mt-1">Compliance docs are required after payment is confirmed.</p>
+            </div>
+          ) : (
+            complianceListings.map(listing => {
+              const winBid = bids.find(b => b.listingId === listing.id && b.vendorId === currentUser?.id && b.status === "accepted");
+              return (
+                <div key={listing.id} className={`card p-5 border-2 ${listing.complianceStatus === "documents_uploaded" ? "border-blue-200" : "border-amber-200"}`}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-black text-slate-400">{listing.id}</span>
+                        <span className={`text-[9px] px-2.5 py-0.5 rounded-full font-black uppercase ${listing.complianceStatus === "documents_uploaded" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"}`}>
+                          {listing.complianceStatus === "documents_uploaded" ? "Docs Uploaded" : "Pending Docs"}
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-slate-900">{listing.title}</h3>
+                      <p className="text-xs text-slate-500">{listing.location} · ₹{winBid?.amount.toLocaleString()}</p>
+                    </div>
+                    {listing.complianceStatus !== "documents_uploaded" && (
+                      <button
+                        onClick={() => setComplianceModal({ open: true, listingId: listing.id })}
+                        className="px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-black uppercase hover:bg-primary/90 shrink-0"
+                      >
+                        Upload Docs
+                      </button>
+                    )}
+                    {listing.complianceStatus === "documents_uploaded" && (
+                      <span className="px-4 py-2 rounded-xl bg-blue-100 text-blue-700 text-xs font-black uppercase">Under Review</span>
+                    )}
+                  </div>
+                  {listing.pickupScheduledDate && (
+                    <p className="text-xs text-slate-500 mt-2">Pickup: {new Date(listing.pickupScheduledDate).toLocaleDateString("en-IN")}</p>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {/* Compliance upload modal */}
+      {complianceModal.open && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white dark:bg-slate-900">
+              <h3 className="text-xl font-headline font-extrabold text-slate-900">Upload Compliance Documents</h3>
+              <button onClick={() => setComplianceModal({ open: false, listingId: null })} className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center">
+                <span className="material-symbols-outlined text-slate-500">close</span>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="label">Pickup Date</label>
+                <input type="date" className="input-base" value={pickupDate} onChange={e => setPickupDate(e.target.value)} />
+              </div>
+              {COMP_DOCS.map(doc => (
+                <div key={doc.key}>
+                  <label className="label">{doc.label}{doc.required && <span className="text-red-500 ml-1">*</span>}</label>
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer hover:border-primary transition-colors ${compFiles[doc.key] ? "border-emerald-400 bg-emerald-50" : "border-slate-200"}`}
+                    onClick={() => document.getElementById(`comp-${doc.key}`)?.click()}
+                  >
+                    <input id={`comp-${doc.key}`} type="file" accept=".pdf,image/*" className="hidden"
+                      onChange={e => setCompFiles(p => ({ ...p, [doc.key]: e.target.files?.[0] || null }))} />
+                    {compFiles[doc.key] ? (
+                      <p className="text-sm font-bold text-emerald-700">{compFiles[doc.key]?.name}</p>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="material-symbols-outlined text-slate-300">{doc.icon}</span>
+                        <p className="text-xs text-slate-400">Click to upload {doc.label}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="p-6 border-t border-slate-100 flex justify-end gap-3 sticky bottom-0 bg-white dark:bg-slate-900">
+              <button onClick={() => setComplianceModal({ open: false, listingId: null })}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 hover:bg-slate-50">Cancel</button>
+              <button
+                onClick={handleComplianceSubmit}
+                disabled={!compFiles.form6 || !compFiles.weightEmpty || !compFiles.weightLoaded || !compFiles.recycling}
+                className="px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 disabled:opacity-50"
+              >
+                Submit All Documents
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

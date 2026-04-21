@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Space_Grotesk, Manrope } from "next/font/google";
 import { AppProvider } from "@/context/AppContext";
+import ThemeWrapper from "@/components/shared/ThemeWrapper";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -50,7 +51,9 @@ export default function RootLayout({
         <div className="bg-orb-1"></div>
         <div className="bg-orb-2"></div>
         <div className="bg-orb-3"></div>
-        <AppProvider>{children}</AppProvider>
+        <AppProvider>
+          <ThemeWrapper>{children}</ThemeWrapper>
+        </AppProvider>
       </body>
     </html>
   );

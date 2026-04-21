@@ -7,7 +7,7 @@ import Sidebar from "@/components/shared/Sidebar";
 import TopBar from "@/components/shared/TopBar";
 
 export default function VendorLayout({ children }: { children: React.ReactNode }) {
-  const { currentUser } = useApp();
+  const { currentUser, isSidebarCollapsed } = useApp();
   const router = useRouter();
 
   useEffect(() => {
@@ -23,7 +23,9 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   return (
     <div className="flex min-h-screen bg-[color:var(--color-dashboard-bg)]">
       <Sidebar />
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${
+        isSidebarCollapsed ? 'lg:ml-16' : 'lg:ml-[280px]'
+      }`}>
         <TopBar />
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>

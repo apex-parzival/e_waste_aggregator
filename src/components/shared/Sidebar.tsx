@@ -3,13 +3,49 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
+import { AiAssistantCard } from "./AiAssistantCard";
+
+const ADMIN_SECTIONS = [
+  {
+    title: "Management",
+    links: [
+      { href: "/admin/users", icon: "group", label: "Clients" },
+      { href: "/admin/vendors", icon: "recycling", label: "Vendors" },
+      { href: "/admin/listings", icon: "inventory_2", label: "Requests" },
+      { href: "/admin/auctions", icon: "gavel", label: "Auctions" },
+      { href: "/admin/contracts", icon: "description", label: "Contracts" },
+      { href: "/admin/payments", icon: "payments", label: "Payments" },
+      { href: "/admin/transactions", icon: "receipt_long", label: "Transactions" },
+    ]
+  },
+  {
+    title: "Operations",
+    links: [
+      { href: "/admin/audits", icon: "fact_check", label: "Audit Management" },
+      { href: "/admin/logistics", icon: "local_shipping", label: "Pickups & Logistics" },
+      { href: "/admin/compliance", icon: "shield", label: "Compliance" },
+      { href: "/admin/documents", icon: "folder_open", label: "Documents" },
+    ]
+  },
+  {
+    title: "Analytics",
+    links: [
+      { href: "/admin/reports", icon: "analytics", label: "Reports & Insights" },
+      { href: "/admin/performance", icon: "troubleshoot", label: "Performance" },
+      { href: "/admin/analytics-hub", icon: "hub", label: "Analytics Hub", badge: "New" },
+    ]
+  }
+];
 
 const VENDOR_LINKS = [
   { href: "/vendor/dashboard", icon: "dashboard", label: "Dashboard" },
   { href: "/vendor/marketplace", icon: "storefront", label: "Auctions" },
   { href: "/vendor/invitations", icon: "mail", label: "Invitations" },
+  { href: "/vendor/audits", icon: "fact_check", label: "Site Audits" },
   { href: "/vendor/live-auction", icon: "sensors", label: "Live Auction" },
   { href: "/vendor/bids", icon: "gavel", label: "My Bids" },
+  { href: "/vendor/final-quote", icon: "upload_file", label: "Final Quote" },
+  { href: "/vendor/payments", icon: "payments", label: "Payments" },
   { href: "/vendor/pickups", icon: "local_shipping", label: "Logistics" },
   { href: "/vendor/reports", icon: "bar_chart", label: "Reports" },
   { href: "/vendor/profile", icon: "badge", label: "Profile & Docs" },
@@ -20,8 +56,11 @@ const CLIENT_LINKS = [
   { href: "/client/post", icon: "add_circle", label: "Post E-Waste" },
   { href: "/client/listings", icon: "inventory_2", label: "My Listings" },
   { href: "/client/bids", icon: "gavel", label: "Bids Received" },
+  { href: "/client/sealed-bids", icon: "lock", label: "Sealed Bids" },
   { href: "/client/live-auction", icon: "sensors", label: "Live Auction" },
+  { href: "/client/final-quote", icon: "handshake", label: "Final Quote" },
   { href: "/client/reports", icon: "bar_chart", label: "Reports" },
+  { href: "/client/documents", icon: "folder_open", label: "Documents" },
   { href: "/client/notifications", icon: "notifications", label: "Notifications" },
   { href: "/client/profile", icon: "person", label: "Profile" },
 ];
@@ -34,28 +73,14 @@ const CONSUMER_LINKS = [
   { href: "/consumer/profile", icon: "person", label: "Profile" },
 ];
 
-const ADMIN_LINKS = [
-  { href: "/admin/dashboard", icon: "monitoring", label: "Dashboard" },
-  { href: "/admin/vendors", icon: "recycling", label: "Vendors" },
-  { href: "/admin/users", icon: "domain", label: "Clients" },
-  { href: "/admin/listings", icon: "inventory_2", label: "Listings" },
-  { href: "/admin/listings?live=1", icon: "sensors", label: "Live Auctions" },
-  { href: "/admin/transactions", icon: "payments", label: "Transactions" },
-  { href: "/admin/reports", icon: "bar_chart", label: "Reports" },
-  { href: "/admin/profile", icon: "person", label: "Profile" },
-  { href: "/admin/settings", icon: "settings", label: "Settings" },
-];
-
 export default function Sidebar() {
-  const { currentUser, logout, notifications, isSidebarOpen, setIsSidebarOpen } = useApp();
+  const { currentUser, logout, notifications, isSidebarOpen, setIsSidebarOpen, isSidebarCollapsed, setIsSidebarCollapsed } = useApp();
   const pathname = usePathname();
   const router = useRouter();
 
   if (!currentUser) return null;
   const role = currentUser.role;
   const isConsumer = role === "consumer" || role === "guest";
-  const links = role === "vendor" ? VENDOR_LINKS : role === "admin" ? ADMIN_LINKS : isConsumer ? CONSUMER_LINKS : CLIENT_LINKS;
-  const unreadNotifs = (notifications || []).filter(n => n.userId === currentUser.id && !n.read).length;
 
   const handleLogout = () => {
     logout();
@@ -63,81 +88,135 @@ export default function Sidebar() {
     router.push("/");
   };
 
+  const renderLink = (link: any) => {
+    const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+    const showIndicator = isActive && role === 'admin';
+
+    return (
+      <Link key={link.href} href={link.href}
+        onClick={() => setIsSidebarOpen(false)}
+        title={isSidebarCollapsed ? link.label : undefined}
+        className={`nav-link group relative flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+          isSidebarCollapsed ? 'justify-center' : ''
+        } ${
+          isActive
+            ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-light font-bold"
+            : "text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-slate-800/50"
+        }`}>
+        <span className={`material-symbols-outlined text-xl transition-all shrink-0 ${isActive ? 'scale-110' : ''}`}
+          style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}>
+          {link.icon}
+        </span>
+        {!isSidebarCollapsed && (
+          <>
+            <span className="text-sm flex-1 truncate">{link.label}</span>
+            {link.badge && (
+              <span className="px-1.5 py-0.5 rounded-md bg-primary text-white text-[9px] font-black uppercase">
+                {link.badge}
+              </span>
+            )}
+          </>
+        )}
+        {showIndicator && !isSidebarCollapsed && (
+          <div className="absolute right-0 w-1 h-5 bg-primary rounded-l-full" />
+        )}
+        {isActive && isSidebarCollapsed && (
+          <div className="absolute left-0 w-1 h-5 bg-primary rounded-r-full" />
+        )}
+      </Link>
+    );
+  };
+
   return (
     <>
-      {/* Backdrop */}
-      <div 
-        className={`fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+      {/* Mobile backdrop */}
+      <div
+        className={`fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] transition-opacity duration-300 lg:hidden ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setIsSidebarOpen(false)}
       />
 
-      {/* Drawer */}
-      <aside className={`sidebar w-[280px] shrink-0 fixed top-0 bottom-0 left-0 z-[101] transition-transform duration-300 ease-out shadow-2xl flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        {/* Logo */}
-        <div className="px-6 py-5 flex items-center justify-between border-b border-white/10 mb-2">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center p-1 bg-white/5">
-              <img src="/logo%203.png" alt="WeConnect Logo" className="w-full h-full object-contain" />
-            </div>
-            <div>
-              <p className="font-headline font-extrabold text-white text-base tracking-tight leading-none uppercase">WE<span className="text-[#0B5ED7]">CONNECT</span></p>
-              <p className="text-[9px] uppercase tracking-[0.2em] text-[#1E8E3E] font-bold">
-                {role === "admin" ? "Admin Console" : role === "vendor" ? "Vendor Portal" : isConsumer ? "Individual Portal" : "Client Portal"}
-              </p>
-            </div>
-          </div>
-          <button onClick={() => setIsSidebarOpen(false)} className="p-1 text-white/50 hover:text-white transition-colors lg:hidden absolute top-4 right-4">
-            <span className="material-symbols-outlined text-xl">close</span>
-          </button>
-        </div>
+      <aside className={`sidebar shrink-0 fixed top-0 bottom-0 left-0 z-[101] bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-900 transition-all duration-300 ease-out flex flex-col ${
+        isSidebarCollapsed ? 'w-16' : 'w-[280px]'
+      } ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
 
-        {/* User info */}
-        <div className="mx-4 mb-4 px-3 py-3 rounded-xl bg-white/5 border border-white/10">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[color:var(--color-primary-container)] flex items-center justify-center font-black text-sm text-white shrink-0">
-              {(currentUser.name || "U")[0]}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white truncate">{currentUser.name}</p>
-              <p className="text-[9px] text-[color:var(--color-primary)] opacity-70 truncate">{currentUser.email}</p>
-            </div>
+        {/* Logo */}
+        <div className={`py-5 mb-2 border-b border-slate-100 dark:border-slate-900/50 flex items-center ${isSidebarCollapsed ? 'justify-center px-2' : 'px-6 gap-3'}`}>
+          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center p-1.5 shadow-lg shadow-primary/20 shrink-0">
+            <img src="/logo%203.png" alt="Logo" className="w-full h-full object-contain invert brightness-0" />
           </div>
+          {!isSidebarCollapsed && (
+            <div>
+              <p className="font-headline font-black text-slate-900 dark:text-white text-base tracking-tight leading-none">WeConnect</p>
+              <p className="text-[10px] uppercase tracking-[0.1em] text-slate-500 font-bold mt-1">E-Waste Aggregator</p>
+            </div>
+          )}
         </div>
 
         {/* Nav links */}
-        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
-          {links.map(link => {
-            const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
-            const showBadge = link.href === "/client/notifications" && unreadNotifs > 0;
-            return (
-              <Link key={link.href} href={link.href}
-                onClick={() => setIsSidebarOpen(false)}
-                className={`nav-link group ${isActive ? "nav-link-active" : ""}`}>
-                <span className={`material-symbols-outlined text-xl transition-all`}
-                  style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}>
-                  {link.icon}
-                </span>
-                <span className="text-sm flex-1">{link.label}</span>
-                {showBadge && (
-                  <span className="w-5 h-5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center">
-                    {unreadNotifs > 9 ? "9+" : unreadNotifs}
-                  </span>
-                )}
-                {isActive && (
-                  <div className={`w-1.5 h-4 rounded-full ml-auto ${isConsumer ? 'bg-[#FFC107]' : 'bg-[#1E8E3E]'}`} />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="flex-1 overflow-y-auto pt-2 pb-4 px-2 custom-scrollbar">
+          {/* Main Dashboard Link */}
+          <div className="mb-4">
+            {renderLink({ href: `/${role}/dashboard`, icon: "dashboard", label: "Dashboard" })}
+          </div>
 
-        {/* Footer */}
-        <div className="px-4 pb-6 pt-4 mt-auto border-t border-white/10">
-          <button onClick={handleLogout}
-            className="nav-link w-full text-red-400/70 hover:text-red-300 hover:bg-red-500/10 group">
-            <span className="material-symbols-outlined text-xl">logout</span>
-            <span className="text-sm">Sign Out</span>
+          {role === 'admin' ? (
+            ADMIN_SECTIONS.map((section) => (
+              <div key={section.title} className="mb-4 last:mb-0">
+                {!isSidebarCollapsed && (
+                  <p className="px-3 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-2">
+                    {section.title}
+                  </p>
+                )}
+                {isSidebarCollapsed && (
+                  <div className="h-px bg-slate-100 dark:bg-slate-800 mx-2 mb-2" />
+                )}
+                <div className="space-y-0.5">
+                  {section.links.map(renderLink)}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="space-y-0.5">
+              {(role === "vendor" ? VENDOR_LINKS : isConsumer ? CONSUMER_LINKS : CLIENT_LINKS).map(renderLink)}
+            </div>
+          )}
+
+          {role === 'admin' && !isSidebarCollapsed && <AiAssistantCard />}
+        </div>
+
+        {/* Collapse toggle + User profile footer */}
+        <div className="mt-auto border-t border-slate-100 dark:border-slate-900/50">
+          {/* Collapse button — desktop only */}
+          <button
+            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            className={`hidden lg:flex w-full items-center gap-2 px-4 py-2.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-all text-xs font-bold ${isSidebarCollapsed ? 'justify-center' : ''}`}
+            title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <span className={`material-symbols-outlined text-lg transition-transform duration-300 ${isSidebarCollapsed ? 'rotate-180' : ''}`}>
+              chevron_left
+            </span>
+            {!isSidebarCollapsed && <span>Collapse</span>}
           </button>
+
+          {/* User profile */}
+          <div className="p-3">
+            <div className={`flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+              <div className="w-9 h-9 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-black text-slate-600 dark:text-slate-400 shrink-0">
+                {currentUser.name[0]}
+              </div>
+              {!isSidebarCollapsed && (
+                <>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{currentUser.name}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase truncate">{role}</p>
+                  </div>
+                  <button onClick={handleLogout} className="w-8 h-8 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-600 transition-colors flex items-center justify-center">
+                    <span className="material-symbols-outlined text-xl">logout</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </aside>
     </>

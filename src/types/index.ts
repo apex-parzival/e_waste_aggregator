@@ -55,6 +55,37 @@ export interface User {
   registeredAt?: string;
 }
 
+export interface AuditInvitation {
+  id: string;
+  listingId: string;
+  vendorId: string;
+  vendorName: string;
+  status: 'invited' | 'accepted' | 'declined' | 'completed';
+  scheduledDate?: string;
+  spocName?: string;
+  spocPhone?: string;
+  siteAddress?: string;
+  productMatch?: boolean;
+  auditRemarks?: string;
+  completedAt?: string;
+  invitedAt: string;
+}
+
+export interface VendorRating {
+  id: string;
+  listingId: string;
+  vendorId: string;
+  vendorName: string;
+  clientId: string;
+  clientName: string;
+  overallRating: number;     // 1-5
+  auditRating?: number;      // 1-5
+  timelinessRating?: number; // 1-5
+  complianceRating?: number; // 1-5
+  comment?: string;
+  createdAt: string;
+}
+
 export interface Listing {
   id: string;
   title: string;
@@ -86,16 +117,43 @@ export interface Listing {
   auctionEndDate?: string;
   invitationDeadline?: string;
   basePrice?: number;
+  targetPrice?: number;
   highestEmdAmount?: number;
-  bidIncrement?: number; // Maps to Tick Size
+  bidIncrement?: number;
   maximumTickSize?: number;
-  extensionTime?: number; // In minutes
+  extensionTime?: number;
   maxExtensions?: number;
   currentExtensions?: number;
   urgency?: 'low' | 'medium' | 'high';
   pickupAddress?: string;
   viewCount?: number;
   bidCount?: number;
+  // Requirement upload flow
+  requirementStatus?: 'pending' | 'processing' | 'finalized';
+  // Winner info (post-auction)
+  winnerVendorId?: string;
+  winnerVendorName?: string;
+  // Final quote flow
+  finalQuoteStatus?: 'pending' | 'submitted' | 'client_reviewing' | 'approved' | 'rejected';
+  finalQuoteProductUrl?: string;
+  finalQuoteLetterheadUrl?: string;
+  finalQuoteSubmittedAt?: string;
+  finalQuoteRemarks?: string;
+  // Payment flow
+  paymentStatus?: 'pending' | 'proof_uploaded' | 'confirmed';
+  paymentClientAmount?: number;
+  paymentCommissionAmount?: number;
+  paymentProofUrl?: string;
+  paymentUTR?: string;
+  paymentSubmittedAt?: string;
+  // Compliance flow
+  complianceStatus?: 'pending' | 'pickup_scheduled' | 'documents_uploaded' | 'verified';
+  pickupScheduledDate?: string;
+  form6Url?: string;
+  weightSlipEmptyUrl?: string;
+  weightSlipLoadedUrl?: string;
+  recyclingCertUrl?: string;
+  disposalCertUrl?: string;
 }
 
 export interface Bid {
@@ -129,8 +187,12 @@ export interface AppState {
   bids: Bid[];
   users: User[];
   notifications: Notification[];
+  auditInvitations: AuditInvitation[];
+  vendorRatings: VendorRating[];
   pendingOnboardingRole?: 'client' | 'vendor' | 'consumer';
   pendingOnboardingEmail?: string;
   pendingOnboardingPassword?: string;
   isSidebarOpen: boolean;
+  isSidebarCollapsed: boolean;
+  theme: 'light' | 'dark';
 }
