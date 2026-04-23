@@ -104,7 +104,7 @@ export default function VendorDashboard() {
             weeklyData={getWeeklyVolume()}
           />
           
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden h-full">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden h-fit">
             <ActivityTable title="Recent Bidding History" items={tableItems} />
           </div>
         </div>

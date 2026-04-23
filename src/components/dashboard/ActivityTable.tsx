@@ -39,7 +39,7 @@ export const ActivityTable: React.FC<ActivityTableProps> = ({ title, items }) =>
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="dashboard-card h-full"
+      className="dashboard-card h-fit"
     >
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-bold text-slate-900">{title}</h3>
