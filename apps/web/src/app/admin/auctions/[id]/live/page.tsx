@@ -72,11 +72,11 @@ export default function AdminLiveObserver() {
 
   // Build per-vendor chart lines (all names visible to admin)
   const vendorMap = new Map<string, { id: string; name: string; color: string; points: { round: number; amount: number }[] }>();
-  [...auctionBids].reverse().forEach((bid, i) => {
+  [...auctionBids].reverse().forEach((bid: any, i) => {
     if (!vendorMap.has(bid.vendorId)) {
       vendorMap.set(bid.vendorId, {
         id: bid.vendorId,
-        name: bid.vendorName,
+        name: bid.vendorName || bid.vendor?.name || "Unknown Vendor",
         color: COLORS[vendorMap.size % COLORS.length],
         points: [],
       });
@@ -193,14 +193,15 @@ export default function AdminLiveObserver() {
                   <span className="material-symbols-outlined text-4xl block mb-2">history_toggle_off</span>
                   <p className="text-sm font-bold">No bids yet</p>
                 </div>
-              ) : auctionBids.map((bid, i) => {
+              ) : (auctionBids as any[]).map((bid, i) => {
                 const isTop = i === 0;
                 const color = vendorMap.get(bid.vendorId)?.color ?? "#CBD5E1";
+                const vendorName = bid.vendorName || bid.vendor?.name || "Unknown Vendor";
                 return (
                   <div key={bid.id} className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-xs transition-all ${isTop ? "bg-emerald-50 border-l-4 border-emerald-500 border border-emerald-100" : "bg-white border border-slate-100 hover:bg-slate-50"}`}>
                     <div className="flex items-center gap-2.5">
                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: color }} />
-                      <span className={`font-bold ${isTop ? "text-emerald-700" : "text-slate-800"}`}>{bid.vendorName}</span>
+                      <span className={`font-bold ${isTop ? "text-emerald-700" : "text-slate-800"}`}>{vendorName}</span>
                       {isTop && <span className="text-[9px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black uppercase tracking-wider">Leader</span>}
                       <span className="text-[10px] text-slate-400 font-mono">{fmtTime(bid.createdAt)}</span>
                     </div>

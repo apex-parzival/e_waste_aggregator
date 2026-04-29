@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -222,7 +222,8 @@ function UserLoginPageContent() {
           </AnimatePresence>
         </div>
       </div>
-    </>
+    </div>
+  </>
   );
 }
 export default function UserLoginPage() {

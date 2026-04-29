@@ -247,7 +247,7 @@ export default function LiveAuctionScreen() {
 
       {isActive && currentHighBid && (
         <div className={`py-2 text-center text-xs font-black uppercase tracking-widest transition-colors ${isLeading ? "bg-[#E8F5E9] text-[#1E8E3E]" : "bg-orange-100 text-orange-600"}`}>
-          {isLeading ? "YOU ARE LEADING" : `OUTBID BY ${currentHighBid.vendorName}`}
+          {isLeading ? "YOU ARE LEADING" : `OUTBID BY ${(currentHighBid as any).vendorName || (currentHighBid as any).vendor?.name || "Another Vendor"}`}
         </div>
       )}
 
@@ -279,11 +279,11 @@ export default function LiveAuctionScreen() {
               <span className="text-[10px] font-bold text-[#0B5ED7] bg-[#EFF6FF] px-2 py-0.5 rounded-full border border-blue-200">{auctionBids.length} events</span>
             </div>
             <div ref={ledgerRef} className="overflow-y-auto p-4 space-y-1.5" style={{ maxHeight: 250 }}>
-              {auctionBids.map((e, i) => (
+              {(auctionBids as any[]).map((e, i) => (
                 <div key={e.id} className={`flex items-center justify-between py-2 px-3 rounded-lg text-xs transition-all ${e.vendorId === currentUser?.id ? "bg-[#E8F5E9] border-l-4 border-l-[#1E8E3E]" : "bg-white border border-slate-100"}`}>
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: vendorBidsMap.get(e.vendorId)?.color || "#CBD5E1" }} />
-                    <span className={`font-bold ${e.vendorId === currentUser?.id ? "text-[#1E8E3E]" : "text-[#1A1A2E]"}`}>{e.vendorName}</span>
+                    <span className={`font-bold ${e.vendorId === currentUser?.id ? "text-[#1E8E3E]" : "text-[#1A1A2E]"}`}>{e.vendorName || e.vendor?.name || "Anonymous"}</span>
                     <span className="text-[10px] text-slate-400">{safeFormatTime(e.createdAt)}</span>
                   </div>
                   <span className={`font-mono font-bold ${e.vendorId === currentUser?.id ? "text-[#1E8E3E]" : "text-slate-600"}`}>{fmtINR(e.amount)}</span>

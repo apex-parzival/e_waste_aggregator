@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -387,7 +387,8 @@ function VendorLoginPageContent() {
           )}
         </div>
       </div>
-    </>
+    </div>
+  </>
   );
 }
 

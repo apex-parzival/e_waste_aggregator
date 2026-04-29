@@ -38,7 +38,9 @@ export default function LiveAuctionEmbed({ listing: initialListing, userRole = "
   sortedBids.forEach((bid, globalIndex) => {
     if (!vendorBidsMap.has(bid.vendorId)) {
       vendorBidsMap.set(bid.vendorId, {
-        name: userRole === "vendor" && bid.vendorId !== initialListing?.userId ? "Anonymous" : bid.vendorName,
+        name: userRole === "vendor" && bid.vendorId !== initialListing?.userId 
+          ? "Anonymous" 
+          : ((bid as any).vendorName || (bid as any).vendor?.name || "Unknown Vendor"),
         id: bid.vendorId,
         bids: []
       });
@@ -190,7 +192,9 @@ export default function LiveAuctionEmbed({ listing: initialListing, userRole = "
                   <div className="flex items-center gap-3">
                     <span className="w-2.5 h-2.5 rounded-full shadow-sm" style={{background: competitors.find(c => c.id === bid.vendorId)?.color || "#CBD5E1"}}></span>
                     <span className={`font-bold ${idx === 0 ? "text-[#1E8E3E]" : "text-[#1A1A2E]"}`}>
-                      {idx === 0 ? "Leader" : `Rank ${idx + 1}`} • {userRole === "vendor" && bid.vendorId !== initialListing?.userId ? "Anonymous Vendor" : bid.vendorName}
+                      {idx === 0 ? "Leader" : `Rank ${idx + 1}`} • {userRole === "vendor" && bid.vendorId !== initialListing?.userId 
+                        ? "Anonymous Vendor" 
+                        : ((bid as any).vendorName || (bid as any).vendor?.name || "Unknown Vendor")}
                     </span>
                     <span className="text-[10px] text-slate-400">
                       {formatTime(bid.createdAt)}
