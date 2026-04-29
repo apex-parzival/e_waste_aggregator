@@ -7,23 +7,23 @@ export declare class PickupsService {
     constructor(prisma: PrismaService, s3: S3Service);
     create(auctionId: string, paymentId?: string): Promise<{
         id: string;
-        auctionId: string;
-        paymentId: string | null;
-        status: import("@prisma/client").$Enums.PickupStatus;
-        scheduledDate: Date | null;
-        adminNotes: string | null;
         createdAt: Date;
         updatedAt: Date;
+        status: import("@prisma/client").$Enums.PickupStatus;
+        auctionId: string;
+        adminNotes: string | null;
+        paymentId: string | null;
+        scheduledDate: Date | null;
     }>;
     findAll(status?: PickupStatus): Promise<({
         auction: {
             client: {
                 id: string;
-                status: import("@prisma/client").$Enums.CompanyStatus;
+                name: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 type: import("@prisma/client").$Enums.CompanyType;
+                status: import("@prisma/client").$Enums.CompanyStatus;
                 gstNumber: string | null;
                 panNumber: string | null;
                 address: string | null;
@@ -35,11 +35,11 @@ export declare class PickupsService {
             };
             winner: {
                 id: string;
-                status: import("@prisma/client").$Enums.CompanyStatus;
+                name: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 type: import("@prisma/client").$Enums.CompanyType;
+                status: import("@prisma/client").$Enums.CompanyStatus;
                 gstNumber: string | null;
                 panNumber: string | null;
                 address: string | null;
@@ -51,14 +51,16 @@ export declare class PickupsService {
             } | null;
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.AuctionStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.AuctionStatus;
             title: string;
-            category: string;
             description: string | null;
-            basePrice: number;
             targetPrice: number | null;
+            category: string;
+            clientId: string;
+            requirementId: string | null;
+            basePrice: number;
             tickSize: number;
             maxTicks: number;
             extensionMinutes: number;
@@ -67,11 +69,9 @@ export declare class PickupsService {
             openPhaseStart: Date | null;
             openPhaseEnd: Date | null;
             extensionCount: number;
-            clientId: string;
-            winnerId: string | null;
-            requirementId: string | null;
             quoteApproved: boolean | null;
             quoteRemarks: string | null;
+            winnerId: string | null;
         };
         pickupDocs: {
             id: string;
@@ -80,18 +80,18 @@ export declare class PickupsService {
             s3Bucket: string;
             fileName: string;
             mimeType: string | null;
-            pickupId: string;
             uploadedAt: Date;
+            pickupId: string;
         }[];
     } & {
         id: string;
-        auctionId: string;
-        paymentId: string | null;
-        status: import("@prisma/client").$Enums.PickupStatus;
-        scheduledDate: Date | null;
-        adminNotes: string | null;
         createdAt: Date;
         updatedAt: Date;
+        status: import("@prisma/client").$Enums.PickupStatus;
+        auctionId: string;
+        adminNotes: string | null;
+        paymentId: string | null;
+        scheduledDate: Date | null;
     })[]>;
     findOne(id: string): Promise<{
         pickupDocs: {
@@ -102,17 +102,17 @@ export declare class PickupsService {
             s3Bucket: string;
             fileName: string;
             mimeType: string | null;
-            pickupId: string;
             uploadedAt: Date;
+            pickupId: string;
         }[];
         auction: {
             client: {
                 id: string;
-                status: import("@prisma/client").$Enums.CompanyStatus;
+                name: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 type: import("@prisma/client").$Enums.CompanyType;
+                status: import("@prisma/client").$Enums.CompanyStatus;
                 gstNumber: string | null;
                 panNumber: string | null;
                 address: string | null;
@@ -124,11 +124,11 @@ export declare class PickupsService {
             };
             winner: {
                 id: string;
-                status: import("@prisma/client").$Enums.CompanyStatus;
+                name: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 type: import("@prisma/client").$Enums.CompanyType;
+                status: import("@prisma/client").$Enums.CompanyStatus;
                 gstNumber: string | null;
                 panNumber: string | null;
                 address: string | null;
@@ -140,14 +140,16 @@ export declare class PickupsService {
             } | null;
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.AuctionStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.AuctionStatus;
             title: string;
-            category: string;
             description: string | null;
-            basePrice: number;
             targetPrice: number | null;
+            category: string;
+            clientId: string;
+            requirementId: string | null;
+            basePrice: number;
             tickSize: number;
             maxTicks: number;
             extensionMinutes: number;
@@ -156,44 +158,42 @@ export declare class PickupsService {
             openPhaseStart: Date | null;
             openPhaseEnd: Date | null;
             extensionCount: number;
-            clientId: string;
-            winnerId: string | null;
-            requirementId: string | null;
             quoteApproved: boolean | null;
             quoteRemarks: string | null;
+            winnerId: string | null;
         };
         payment: {
             id: string;
-            auctionId: string;
-            status: import("@prisma/client").$Enums.PaymentStatus;
-            adminNotes: string | null;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
+            auctionId: string;
             clientAmount: number;
             commissionAmount: number;
             totalAmount: number;
             utrNumber: string | null;
             proofS3Key: string | null;
             proofS3Bucket: string | null;
+            adminNotes: string | null;
         } | null;
         id: string;
-        auctionId: string;
-        paymentId: string | null;
-        status: import("@prisma/client").$Enums.PickupStatus;
-        scheduledDate: Date | null;
-        adminNotes: string | null;
         createdAt: Date;
         updatedAt: Date;
+        status: import("@prisma/client").$Enums.PickupStatus;
+        auctionId: string;
+        adminNotes: string | null;
+        paymentId: string | null;
+        scheduledDate: Date | null;
     }>;
     schedule(id: string, scheduledDate: string): Promise<{
         id: string;
-        auctionId: string;
-        paymentId: string | null;
-        status: import("@prisma/client").$Enums.PickupStatus;
-        scheduledDate: Date | null;
-        adminNotes: string | null;
         createdAt: Date;
         updatedAt: Date;
+        status: import("@prisma/client").$Enums.PickupStatus;
+        auctionId: string;
+        adminNotes: string | null;
+        paymentId: string | null;
+        scheduledDate: Date | null;
     }>;
     uploadDocument(id: string, file: Express.Multer.File, type: DocumentType): Promise<{
         id: string;
@@ -202,17 +202,17 @@ export declare class PickupsService {
         s3Bucket: string;
         fileName: string;
         mimeType: string | null;
-        pickupId: string;
         uploadedAt: Date;
+        pickupId: string;
     }>;
     completePickup(id: string, adminNotes?: string): Promise<{
         id: string;
-        auctionId: string;
-        paymentId: string | null;
-        status: import("@prisma/client").$Enums.PickupStatus;
-        scheduledDate: Date | null;
-        adminNotes: string | null;
         createdAt: Date;
         updatedAt: Date;
+        status: import("@prisma/client").$Enums.PickupStatus;
+        auctionId: string;
+        adminNotes: string | null;
+        paymentId: string | null;
+        scheduledDate: Date | null;
     }>;
 }

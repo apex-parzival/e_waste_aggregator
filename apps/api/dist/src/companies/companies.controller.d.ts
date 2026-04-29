@@ -6,6 +6,8 @@ export declare class CompaniesController {
     create(req: any, body: any): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         type: import("@prisma/client").$Enums.CompanyType;
         status: import("@prisma/client").$Enums.CompanyStatus;
         gstNumber: string | null;
@@ -16,14 +18,12 @@ export declare class CompaniesController {
         pincode: string | null;
         rating: number | null;
         ratingCount: number;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     findAll(type?: CompanyType, status?: CompanyStatus): Promise<({
         kycDocuments: {
             id: string;
-            type: import("@prisma/client").$Enums.DocumentType;
             companyId: string;
+            type: import("@prisma/client").$Enums.DocumentType;
             s3Key: string;
             s3Bucket: string;
             fileName: string;
@@ -32,13 +32,15 @@ export declare class CompaniesController {
         }[];
         users: {
             id: string;
-            name: string;
             email: string;
+            name: string;
             role: import("@prisma/client").$Enums.UserRole;
         }[];
     } & {
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         type: import("@prisma/client").$Enums.CompanyType;
         status: import("@prisma/client").$Enums.CompanyStatus;
         gstNumber: string | null;
@@ -49,15 +51,13 @@ export declare class CompaniesController {
         pincode: string | null;
         rating: number | null;
         ratingCount: number;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
     findOne(id: string): Promise<{
         kycDocuments: {
             signedUrl: string;
             id: string;
-            type: import("@prisma/client").$Enums.DocumentType;
             companyId: string;
+            type: import("@prisma/client").$Enums.DocumentType;
             s3Key: string;
             s3Bucket: string;
             fileName: string;
@@ -66,12 +66,14 @@ export declare class CompaniesController {
         }[];
         users: {
             id: string;
-            name: string;
             email: string;
+            name: string;
             role: import("@prisma/client").$Enums.UserRole;
         }[];
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         type: import("@prisma/client").$Enums.CompanyType;
         status: import("@prisma/client").$Enums.CompanyStatus;
         gstNumber: string | null;
@@ -82,12 +84,12 @@ export declare class CompaniesController {
         pincode: string | null;
         rating: number | null;
         ratingCount: number;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     update(id: string, body: any): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         type: import("@prisma/client").$Enums.CompanyType;
         status: import("@prisma/client").$Enums.CompanyStatus;
         gstNumber: string | null;
@@ -98,12 +100,12 @@ export declare class CompaniesController {
         pincode: string | null;
         rating: number | null;
         ratingCount: number;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     updateStatus(id: string, status: CompanyStatus): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         type: import("@prisma/client").$Enums.CompanyType;
         status: import("@prisma/client").$Enums.CompanyStatus;
         gstNumber: string | null;
@@ -114,13 +116,11 @@ export declare class CompaniesController {
         pincode: string | null;
         rating: number | null;
         ratingCount: number;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     uploadDocument(id: string, file: Express.Multer.File, type: DocumentType): Promise<{
         id: string;
-        type: import("@prisma/client").$Enums.DocumentType;
         companyId: string;
+        type: import("@prisma/client").$Enums.DocumentType;
         s3Key: string;
         s3Bucket: string;
         fileName: string;
@@ -130,6 +130,8 @@ export declare class CompaniesController {
     updateRating(id: string, rating: number): Promise<{
         id: string;
         name: string;
+        createdAt: Date;
+        updatedAt: Date;
         type: import("@prisma/client").$Enums.CompanyType;
         status: import("@prisma/client").$Enums.CompanyStatus;
         gstNumber: string | null;
@@ -140,7 +142,5 @@ export declare class CompaniesController {
         pincode: string | null;
         rating: number | null;
         ratingCount: number;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
 }

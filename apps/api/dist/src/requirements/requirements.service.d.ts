@@ -15,11 +15,11 @@ export declare class RequirementsService {
     }): Promise<{
         client: {
             id: string;
-            status: import("@prisma/client").$Enums.CompanyStatus;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             type: import("@prisma/client").$Enums.CompanyType;
+            status: import("@prisma/client").$Enums.CompanyStatus;
             gstNumber: string | null;
             panNumber: string | null;
             address: string | null;
@@ -31,48 +31,24 @@ export declare class RequirementsService {
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.RequirementStatus;
         title: string;
         description: string | null;
-        status: import("@prisma/client").$Enums.RequirementStatus;
         rawS3Key: string | null;
         processedS3Key: string | null;
         targetPrice: number | null;
         totalWeight: number | null;
         category: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         clientId: string;
     }>;
     findAll(clientId?: string): Promise<({
-        auction: {
-            id: string;
-            title: string;
-            description: string | null;
-            status: import("@prisma/client").$Enums.AuctionStatus;
-            targetPrice: number | null;
-            category: string;
-            createdAt: Date;
-            updatedAt: Date;
-            clientId: string;
-            basePrice: number;
-            tickSize: number;
-            maxTicks: number;
-            extensionMinutes: number;
-            sealedPhaseStart: Date | null;
-            sealedPhaseEnd: Date | null;
-            openPhaseStart: Date | null;
-            openPhaseEnd: Date | null;
-            extensionCount: number;
-            winnerId: string | null;
-            requirementId: string | null;
-            quoteApproved: boolean | null;
-            quoteRemarks: string | null;
-        } | null;
         auditInvitations: {
             id: string;
-            status: import("@prisma/client").$Enums.AuditStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.AuditStatus;
             requirementId: string;
             vendorId: string;
             siteAddress: string | null;
@@ -80,17 +56,41 @@ export declare class RequirementsService {
             spocPhone: string | null;
             scheduledAt: Date | null;
         }[];
+        auction: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.AuctionStatus;
+            title: string;
+            description: string | null;
+            targetPrice: number | null;
+            category: string;
+            clientId: string;
+            requirementId: string | null;
+            basePrice: number;
+            tickSize: number;
+            maxTicks: number;
+            extensionMinutes: number;
+            sealedPhaseStart: Date | null;
+            sealedPhaseEnd: Date | null;
+            openPhaseStart: Date | null;
+            openPhaseEnd: Date | null;
+            extensionCount: number;
+            quoteApproved: boolean | null;
+            quoteRemarks: string | null;
+            winnerId: string | null;
+        } | null;
         client: {
             users: {
                 id: string;
             }[];
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.CompanyStatus;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             type: import("@prisma/client").$Enums.CompanyType;
+            status: import("@prisma/client").$Enums.CompanyStatus;
             gstNumber: string | null;
             panNumber: string | null;
             address: string | null;
@@ -102,51 +102,27 @@ export declare class RequirementsService {
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.RequirementStatus;
         title: string;
         description: string | null;
-        status: import("@prisma/client").$Enums.RequirementStatus;
         rawS3Key: string | null;
         processedS3Key: string | null;
         targetPrice: number | null;
         totalWeight: number | null;
         category: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         clientId: string;
     })[]>;
     findOne(id: string): Promise<{
-        auction: {
-            id: string;
-            title: string;
-            description: string | null;
-            status: import("@prisma/client").$Enums.AuctionStatus;
-            targetPrice: number | null;
-            category: string;
-            createdAt: Date;
-            updatedAt: Date;
-            clientId: string;
-            basePrice: number;
-            tickSize: number;
-            maxTicks: number;
-            extensionMinutes: number;
-            sealedPhaseStart: Date | null;
-            sealedPhaseEnd: Date | null;
-            openPhaseStart: Date | null;
-            openPhaseEnd: Date | null;
-            extensionCount: number;
-            winnerId: string | null;
-            requirementId: string | null;
-            quoteApproved: boolean | null;
-            quoteRemarks: string | null;
-        } | null;
         auditInvitations: ({
             vendor: {
                 id: string;
-                status: import("@prisma/client").$Enums.CompanyStatus;
+                name: string;
                 createdAt: Date;
                 updatedAt: Date;
-                name: string;
                 type: import("@prisma/client").$Enums.CompanyType;
+                status: import("@prisma/client").$Enums.CompanyStatus;
                 gstNumber: string | null;
                 panNumber: string | null;
                 address: string | null;
@@ -168,9 +144,9 @@ export declare class RequirementsService {
             } | null;
         } & {
             id: string;
-            status: import("@prisma/client").$Enums.AuditStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.AuditStatus;
             requirementId: string;
             vendorId: string;
             siteAddress: string | null;
@@ -178,13 +154,37 @@ export declare class RequirementsService {
             spocPhone: string | null;
             scheduledAt: Date | null;
         })[];
-        client: {
+        auction: {
             id: string;
-            status: import("@prisma/client").$Enums.CompanyStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.AuctionStatus;
+            title: string;
+            description: string | null;
+            targetPrice: number | null;
+            category: string;
+            clientId: string;
+            requirementId: string | null;
+            basePrice: number;
+            tickSize: number;
+            maxTicks: number;
+            extensionMinutes: number;
+            sealedPhaseStart: Date | null;
+            sealedPhaseEnd: Date | null;
+            openPhaseStart: Date | null;
+            openPhaseEnd: Date | null;
+            extensionCount: number;
+            quoteApproved: boolean | null;
+            quoteRemarks: string | null;
+            winnerId: string | null;
+        } | null;
+        client: {
+            id: string;
             name: string;
+            createdAt: Date;
+            updatedAt: Date;
             type: import("@prisma/client").$Enums.CompanyType;
+            status: import("@prisma/client").$Enums.CompanyStatus;
             gstNumber: string | null;
             panNumber: string | null;
             address: string | null;
@@ -196,30 +196,30 @@ export declare class RequirementsService {
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.RequirementStatus;
         title: string;
         description: string | null;
-        status: import("@prisma/client").$Enums.RequirementStatus;
         rawS3Key: string | null;
         processedS3Key: string | null;
         targetPrice: number | null;
         totalWeight: number | null;
         category: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         clientId: string;
     }>;
     uploadProcessedSheet(id: string, file: Express.Multer.File): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.RequirementStatus;
         title: string;
         description: string | null;
-        status: import("@prisma/client").$Enums.RequirementStatus;
         rawS3Key: string | null;
         processedS3Key: string | null;
         targetPrice: number | null;
         totalWeight: number | null;
         category: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         clientId: string;
     }>;
     clientApprove(id: string, data: {
@@ -228,16 +228,16 @@ export declare class RequirementsService {
         category?: string;
     }): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import("@prisma/client").$Enums.RequirementStatus;
         title: string;
         description: string | null;
-        status: import("@prisma/client").$Enums.RequirementStatus;
         rawS3Key: string | null;
         processedS3Key: string | null;
         targetPrice: number | null;
         totalWeight: number | null;
         category: string | null;
-        createdAt: Date;
-        updatedAt: Date;
         clientId: string;
     }>;
     getSignedUrl(id: string, field: 'raw' | 'processed'): Promise<{

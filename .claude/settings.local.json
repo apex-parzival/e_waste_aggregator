@@ -16,7 +16,14 @@
       "Bash(node -e ' *)",
       "Bash(timeout 20 cat \"C:\\\\Users\\\\parzival\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--engineering-4th-year-mirai-int-e-waste-agregator-ecoloop-app\\\\d3418e73-c817-4027-a66f-5337fc2bad19\\\\tasks\\\\b8hyvc0ce.output\")",
       "Bash(grep -E \"\\(controller|service|module\\)$\")",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(npm install *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git remote *)",
+      "Bash(git fetch *)",
+      "Bash(git checkout *)"
     ]
   }
 }

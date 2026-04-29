@@ -26,15 +26,15 @@ export declare class AuctionGateway implements OnGatewayInit, OnGatewayConnectio
         };
     } & {
         id: string;
+        createdAt: Date;
+        vendorId: string;
+        remarks: string | null;
         amount: number;
         phase: import("@prisma/client").$Enums.BidPhase;
-        remarks: string | null;
         rank: number | null;
         auctionId: string;
-        vendorId: string;
         priceSheetS3Key: string | null;
         priceSheetS3Bucket: string | null;
         priceSheetFileName: string | null;
-        createdAt: Date;
     })[]>;
 }

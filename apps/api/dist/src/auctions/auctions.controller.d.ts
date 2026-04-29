@@ -5,12 +5,16 @@ export declare class AuctionsController {
     constructor(svc: AuctionsService);
     create(body: any, req: any): Promise<{
         id: string;
-        title: string;
-        category: string;
-        description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         status: import("@prisma/client").$Enums.AuctionStatus;
-        basePrice: number;
+        title: string;
+        description: string | null;
         targetPrice: number | null;
+        category: string;
+        clientId: string;
+        requirementId: string | null;
+        basePrice: number;
         tickSize: number;
         maxTicks: number;
         extensionMinutes: number;
@@ -19,22 +23,31 @@ export declare class AuctionsController {
         openPhaseStart: Date | null;
         openPhaseEnd: Date | null;
         extensionCount: number;
-        createdAt: Date;
-        updatedAt: Date;
         quoteApproved: boolean | null;
         quoteRemarks: string | null;
-        clientId: string;
         winnerId: string | null;
-        requirementId: string | null;
     }>;
     findAll(status?: AuctionStatus, clientId?: string): Promise<({
+        bids: {
+            id: string;
+            createdAt: Date;
+            vendorId: string;
+            remarks: string | null;
+            amount: number;
+            phase: import("@prisma/client").$Enums.BidPhase;
+            rank: number | null;
+            auctionId: string;
+            priceSheetS3Key: string | null;
+            priceSheetS3Bucket: string | null;
+            priceSheetFileName: string | null;
+        }[];
         client: {
             id: string;
-            status: import("@prisma/client").$Enums.CompanyStatus;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             type: import("@prisma/client").$Enums.CompanyType;
+            status: import("@prisma/client").$Enums.CompanyStatus;
             gstNumber: string | null;
             panNumber: string | null;
             address: string | null;
@@ -46,11 +59,11 @@ export declare class AuctionsController {
         };
         winner: {
             id: string;
-            status: import("@prisma/client").$Enums.CompanyStatus;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             type: import("@prisma/client").$Enums.CompanyType;
+            status: import("@prisma/client").$Enums.CompanyStatus;
             gstNumber: string | null;
             panNumber: string | null;
             address: string | null;
@@ -60,27 +73,18 @@ export declare class AuctionsController {
             rating: number | null;
             ratingCount: number;
         } | null;
-        bids: {
-            id: string;
-            createdAt: Date;
-            amount: number;
-            phase: import("@prisma/client").$Enums.BidPhase;
-            remarks: string | null;
-            rank: number | null;
-            auctionId: string;
-            vendorId: string;
-            priceSheetS3Key: string | null;
-            priceSheetS3Bucket: string | null;
-            priceSheetFileName: string | null;
-        }[];
     } & {
         id: string;
-        title: string;
-        category: string;
-        description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         status: import("@prisma/client").$Enums.AuctionStatus;
-        basePrice: number;
+        title: string;
+        description: string | null;
         targetPrice: number | null;
+        category: string;
+        clientId: string;
+        requirementId: string | null;
+        basePrice: number;
         tickSize: number;
         maxTicks: number;
         extensionMinutes: number;
@@ -89,13 +93,9 @@ export declare class AuctionsController {
         openPhaseStart: Date | null;
         openPhaseEnd: Date | null;
         extensionCount: number;
-        createdAt: Date;
-        updatedAt: Date;
         quoteApproved: boolean | null;
         quoteRemarks: string | null;
-        clientId: string;
         winnerId: string | null;
-        requirementId: string | null;
     })[]>;
     findAllBids(auctionId?: string): Promise<({
         vendor: {
@@ -105,24 +105,52 @@ export declare class AuctionsController {
     } & {
         id: string;
         createdAt: Date;
+        vendorId: string;
+        remarks: string | null;
         amount: number;
         phase: import("@prisma/client").$Enums.BidPhase;
-        remarks: string | null;
         rank: number | null;
         auctionId: string;
-        vendorId: string;
         priceSheetS3Key: string | null;
         priceSheetS3Bucket: string | null;
         priceSheetFileName: string | null;
     })[]>;
     findOne(id: string): Promise<{
-        client: {
+        bids: ({
+            vendor: {
+                id: string;
+                name: string;
+            };
+        } & {
             id: string;
-            status: import("@prisma/client").$Enums.CompanyStatus;
+            createdAt: Date;
+            vendorId: string;
+            remarks: string | null;
+            amount: number;
+            phase: import("@prisma/client").$Enums.BidPhase;
+            rank: number | null;
+            auctionId: string;
+            priceSheetS3Key: string | null;
+            priceSheetS3Bucket: string | null;
+            priceSheetFileName: string | null;
+        })[];
+        pickup: {
+            id: string;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.PickupStatus;
+            auctionId: string;
+            adminNotes: string | null;
+            paymentId: string | null;
+            scheduledDate: Date | null;
+        } | null;
+        client: {
+            id: string;
             name: string;
+            createdAt: Date;
+            updatedAt: Date;
             type: import("@prisma/client").$Enums.CompanyType;
+            status: import("@prisma/client").$Enums.CompanyStatus;
             gstNumber: string | null;
             panNumber: string | null;
             address: string | null;
@@ -134,11 +162,11 @@ export declare class AuctionsController {
         };
         winner: {
             id: string;
-            status: import("@prisma/client").$Enums.CompanyStatus;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             type: import("@prisma/client").$Enums.CompanyType;
+            status: import("@prisma/client").$Enums.CompanyStatus;
             gstNumber: string | null;
             panNumber: string | null;
             address: string | null;
@@ -151,49 +179,25 @@ export declare class AuctionsController {
         auctionDocs: {
             id: string;
             type: import("@prisma/client").$Enums.DocumentType;
-            auctionId: string;
             s3Key: string;
             s3Bucket: string;
             fileName: string;
             mimeType: string | null;
             uploadedAt: Date;
+            auctionId: string;
         }[];
-        bids: ({
-            vendor: {
-                id: string;
-                name: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            amount: number;
-            phase: import("@prisma/client").$Enums.BidPhase;
-            remarks: string | null;
-            rank: number | null;
-            auctionId: string;
-            vendorId: string;
-            priceSheetS3Key: string | null;
-            priceSheetS3Bucket: string | null;
-            priceSheetFileName: string | null;
-        })[];
-        pickup: {
-            id: string;
-            status: import("@prisma/client").$Enums.PickupStatus;
-            createdAt: Date;
-            updatedAt: Date;
-            auctionId: string;
-            scheduledDate: Date | null;
-            paymentId: string | null;
-            adminNotes: string | null;
-        } | null;
     } & {
         id: string;
-        title: string;
-        category: string;
-        description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         status: import("@prisma/client").$Enums.AuctionStatus;
-        basePrice: number;
+        title: string;
+        description: string | null;
         targetPrice: number | null;
+        category: string;
+        clientId: string;
+        requirementId: string | null;
+        basePrice: number;
         tickSize: number;
         maxTicks: number;
         extensionMinutes: number;
@@ -202,22 +206,22 @@ export declare class AuctionsController {
         openPhaseStart: Date | null;
         openPhaseEnd: Date | null;
         extensionCount: number;
-        createdAt: Date;
-        updatedAt: Date;
         quoteApproved: boolean | null;
         quoteRemarks: string | null;
-        clientId: string;
         winnerId: string | null;
-        requirementId: string | null;
     }>;
     schedule(id: string, body: any): Promise<{
         id: string;
-        title: string;
-        category: string;
-        description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         status: import("@prisma/client").$Enums.AuctionStatus;
-        basePrice: number;
+        title: string;
+        description: string | null;
         targetPrice: number | null;
+        category: string;
+        clientId: string;
+        requirementId: string | null;
+        basePrice: number;
         tickSize: number;
         maxTicks: number;
         extensionMinutes: number;
@@ -226,22 +230,22 @@ export declare class AuctionsController {
         openPhaseStart: Date | null;
         openPhaseEnd: Date | null;
         extensionCount: number;
-        createdAt: Date;
-        updatedAt: Date;
         quoteApproved: boolean | null;
         quoteRemarks: string | null;
-        clientId: string;
         winnerId: string | null;
-        requirementId: string | null;
     }>;
     updateStatus(id: string, status: AuctionStatus): Promise<{
         id: string;
-        title: string;
-        category: string;
-        description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         status: import("@prisma/client").$Enums.AuctionStatus;
-        basePrice: number;
+        title: string;
+        description: string | null;
         targetPrice: number | null;
+        category: string;
+        clientId: string;
+        requirementId: string | null;
+        basePrice: number;
         tickSize: number;
         maxTicks: number;
         extensionMinutes: number;
@@ -250,35 +254,35 @@ export declare class AuctionsController {
         openPhaseStart: Date | null;
         openPhaseEnd: Date | null;
         extensionCount: number;
-        createdAt: Date;
-        updatedAt: Date;
         quoteApproved: boolean | null;
         quoteRemarks: string | null;
-        clientId: string;
         winnerId: string | null;
-        requirementId: string | null;
     }>;
     sealedBid(id: string, body: any, req: any, file: Express.Multer.File): Promise<{
         id: string;
         createdAt: Date;
+        vendorId: string;
+        remarks: string | null;
         amount: number;
         phase: import("@prisma/client").$Enums.BidPhase;
-        remarks: string | null;
         rank: number | null;
         auctionId: string;
-        vendorId: string;
         priceSheetS3Key: string | null;
         priceSheetS3Bucket: string | null;
         priceSheetFileName: string | null;
     }>;
     selectWinner(id: string, vendorId: string): Promise<{
         id: string;
-        title: string;
-        category: string;
-        description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         status: import("@prisma/client").$Enums.AuctionStatus;
-        basePrice: number;
+        title: string;
+        description: string | null;
         targetPrice: number | null;
+        category: string;
+        clientId: string;
+        requirementId: string | null;
+        basePrice: number;
         tickSize: number;
         maxTicks: number;
         extensionMinutes: number;
@@ -287,23 +291,19 @@ export declare class AuctionsController {
         openPhaseStart: Date | null;
         openPhaseEnd: Date | null;
         extensionCount: number;
-        createdAt: Date;
-        updatedAt: Date;
         quoteApproved: boolean | null;
         quoteRemarks: string | null;
-        clientId: string;
         winnerId: string | null;
-        requirementId: string | null;
     }>;
     uploadFinalQuote(id: string, file: Express.Multer.File, type: 'FINAL_QUOTE' | 'LETTERHEAD_QUOTATION'): Promise<{
         id: string;
         type: import("@prisma/client").$Enums.DocumentType;
-        auctionId: string;
         s3Key: string;
         s3Bucket: string;
         fileName: string;
         mimeType: string | null;
         uploadedAt: Date;
+        auctionId: string;
     }>;
     approveQuote(id: string): Promise<{
         auction: {
@@ -311,23 +311,27 @@ export declare class AuctionsController {
             bids: {
                 id: string;
                 createdAt: Date;
+                vendorId: string;
+                remarks: string | null;
                 amount: number;
                 phase: import("@prisma/client").$Enums.BidPhase;
-                remarks: string | null;
                 rank: number | null;
                 auctionId: string;
-                vendorId: string;
                 priceSheetS3Key: string | null;
                 priceSheetS3Bucket: string | null;
                 priceSheetFileName: string | null;
             }[];
             id: string;
-            title: string;
-            category: string;
-            description: string | null;
+            createdAt: Date;
+            updatedAt: Date;
             status: import("@prisma/client").$Enums.AuctionStatus;
-            basePrice: number;
+            title: string;
+            description: string | null;
             targetPrice: number | null;
+            category: string;
+            clientId: string;
+            requirementId: string | null;
+            basePrice: number;
             tickSize: number;
             maxTicks: number;
             extensionMinutes: number;
@@ -336,36 +340,36 @@ export declare class AuctionsController {
             openPhaseStart: Date | null;
             openPhaseEnd: Date | null;
             extensionCount: number;
-            createdAt: Date;
-            updatedAt: Date;
             quoteRemarks: string | null;
-            clientId: string;
             winnerId: string | null;
-            requirementId: string | null;
         };
         payment: {
             id: string;
-            status: import("@prisma/client").$Enums.PaymentStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import("@prisma/client").$Enums.PaymentStatus;
             auctionId: string;
-            adminNotes: string | null;
             clientAmount: number;
             commissionAmount: number;
             totalAmount: number;
             utrNumber: string | null;
             proofS3Key: string | null;
             proofS3Bucket: string | null;
+            adminNotes: string | null;
         };
     }>;
     rejectQuote(id: string, remarks: string): Promise<{
         id: string;
-        title: string;
-        category: string;
-        description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
         status: import("@prisma/client").$Enums.AuctionStatus;
-        basePrice: number;
+        title: string;
+        description: string | null;
         targetPrice: number | null;
+        category: string;
+        clientId: string;
+        requirementId: string | null;
+        basePrice: number;
         tickSize: number;
         maxTicks: number;
         extensionMinutes: number;
@@ -374,12 +378,8 @@ export declare class AuctionsController {
         openPhaseStart: Date | null;
         openPhaseEnd: Date | null;
         extensionCount: number;
-        createdAt: Date;
-        updatedAt: Date;
         quoteApproved: boolean | null;
         quoteRemarks: string | null;
-        clientId: string;
         winnerId: string | null;
-        requirementId: string | null;
     }>;
 }

@@ -9,8 +9,10 @@ export declare class PaymentsService {
     constructor(prisma: PrismaService, s3: S3Service, notifications: NotificationService);
     createForAuction(auctionId: string, clientAmount: number): Promise<{
         id: string;
-        auctionId: string;
+        createdAt: Date;
+        updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
+        auctionId: string;
         clientAmount: number;
         commissionAmount: number;
         totalAmount: number;
@@ -18,13 +20,13 @@ export declare class PaymentsService {
         proofS3Key: string | null;
         proofS3Bucket: string | null;
         adminNotes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     findByAuction(auctionId: string): Promise<{
         id: string;
-        auctionId: string;
+        createdAt: Date;
+        updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
+        auctionId: string;
         clientAmount: number;
         commissionAmount: number;
         totalAmount: number;
@@ -32,13 +34,13 @@ export declare class PaymentsService {
         proofS3Key: string | null;
         proofS3Bucket: string | null;
         adminNotes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     } | null>;
     findAll(status?: PaymentStatus): Promise<{
         id: string;
-        auctionId: string;
+        createdAt: Date;
+        updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
+        auctionId: string;
         clientAmount: number;
         commissionAmount: number;
         totalAmount: number;
@@ -46,13 +48,13 @@ export declare class PaymentsService {
         proofS3Key: string | null;
         proofS3Bucket: string | null;
         adminNotes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }[]>;
     uploadProof(auctionId: string, file: Express.Multer.File, utrNumber?: string): Promise<{
         id: string;
-        auctionId: string;
+        createdAt: Date;
+        updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
+        auctionId: string;
         clientAmount: number;
         commissionAmount: number;
         totalAmount: number;
@@ -60,13 +62,13 @@ export declare class PaymentsService {
         proofS3Key: string | null;
         proofS3Bucket: string | null;
         adminNotes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     confirm(auctionId: string, adminNotes?: string): Promise<{
         id: string;
-        auctionId: string;
+        createdAt: Date;
+        updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
+        auctionId: string;
         clientAmount: number;
         commissionAmount: number;
         totalAmount: number;
@@ -74,7 +76,5 @@ export declare class PaymentsService {
         proofS3Key: string | null;
         proofS3Bucket: string | null;
         adminNotes: string | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
 }
