@@ -4,6 +4,81 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
+function DemoBox() {
+  const [bids, setBids] = useState([
+    { name: "Vendor A", amount: 210000, rank: "🥇" },
+    { name: "Vendor B", amount: 205000, rank: "🥈" },
+    { name: "Vendor C", amount: 198000, rank: "🥉" },
+  ]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBids(prev => {
+        const next = prev.map(bid => ({
+          ...bid,
+          amount: bid.amount + Math.floor(Math.random() * 5000)
+        })).sort((a, b) => b.amount - a.amount);
+        
+        return next.map((bid, i) => ({
+          ...bid,
+          rank: i === 0 ? "🥇" : i === 1 ? "🥈" : "🥉"
+        }));
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5 }}
+      className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-[2rem] p-6 lg:p-8 text-white w-full max-w-md shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative overflow-hidden group"
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent pointer-events-none" />
+      
+      <div className="flex justify-between items-center mb-8 relative z-10">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em]">Live Auction</span>
+          </div>
+          <span className="text-2xl font-black font-headline">02:15</span>
+        </div>
+        <div className="bg-emerald-500/20 text-emerald-400 px-4 py-1.5 rounded-full text-[10px] font-black border border-emerald-500/30 uppercase tracking-wider">
+          Auto Extend Enabled
+        </div>
+      </div>
+
+      <div className="space-y-1 relative z-10">
+        <div className="grid grid-cols-3 text-white/40 text-[9px] font-black uppercase tracking-[0.2em] pb-3 border-b border-white/10 px-2">
+          <span>Vendor</span>
+          <span>Current Bid</span>
+          <span className="text-right">Rank</span>
+        </div>
+        
+        {bids.map((bid, i) => (
+          <motion.div 
+            key={bid.name}
+            layout
+            className="grid grid-cols-3 items-center py-4 px-2 hover:bg-white/5 rounded-xl transition-colors"
+          >
+            <span className="font-bold text-sm">{bid.name}</span>
+            <span className="font-mono text-emerald-400 font-bold">₹{bid.amount.toLocaleString()}</span>
+            <span className="text-right text-2xl">{bid.rank}</span>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="mt-6 pt-6 border-t border-white/10 relative z-10">
+        <p className="text-[10px] text-white/50 font-medium text-center italic">
+          Real-time price discovery in progress...
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
 function LandingPageContent() {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -38,15 +113,15 @@ function LandingPageContent() {
     <div className="bg-[#F5F7FA] min-h-screen flex flex-col relative text-[#1A1A2E] dark:bg-slate-950">
       {/* 1. NAVBAR — floating pill */}
       <div className={`fixed top-0 left-0 w-full z-50 flex justify-center pt-4 px-4 transition-all duration-500 ${isScrolled ? 'pt-2' : 'pt-4'}`}>
-        <nav className={`w-full max-w-5xl flex items-center justify-between px-5 py-2.5 rounded-2xl transition-all duration-500 bg-white/95 backdrop-blur-xl border border-slate-200/80 ${
+        <nav className={`w-full max-w-6xl flex items-center justify-between px-6 py-2.5 rounded-2xl transition-all duration-500 bg-white/95 backdrop-blur-xl border border-slate-200/80 ${
           isScrolled ? 'shadow-2xl' : 'shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
         }`}>
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
             <img
-              src="/logo%202.png"
+              src="/logo%204.png"
               alt="We Connect"
-              className="h-[36px] object-contain transition-all duration-300"
+              className="h-[42px] object-contain transition-all duration-300"
             />
           </div>
 
@@ -54,6 +129,8 @@ function LandingPageContent() {
           <div className="hidden lg:flex items-center gap-8 relative">
             <button suppressHydrationWarning onClick={() => window.scrollTo(0, 0)} className="font-bold transition-colors duration-300 text-sm text-[#4A5568] hover:text-[#1E8E3E]">Home</button>
             <button suppressHydrationWarning onClick={() => scrollTo('about')} className="font-bold transition-colors duration-300 text-sm text-[#4A5568] hover:text-[#1E8E3E]">About</button>
+            <button suppressHydrationWarning onClick={() => scrollTo('how-it-works')} className="font-bold transition-colors duration-300 text-sm text-[#4A5568] hover:text-[#1E8E3E]">Process</button>
+            <button suppressHydrationWarning onClick={() => scrollTo('services')} className="font-bold transition-colors duration-300 text-sm text-[#4A5568] hover:text-[#1E8E3E]">Services</button>
 
             <div className="relative">
               <button
@@ -83,14 +160,6 @@ function LandingPageContent() {
                 </div>
               )}
             </div>
-
-            <button
-              suppressHydrationWarning
-              onClick={() => router.push('/get-started')}
-              className="px-5 py-2 rounded-xl bg-emerald-600 text-white font-black text-xs uppercase tracking-[0.15em] hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/30"
-            >
-              Get Started
-            </button>
           </div>
 
           {/* Mobile Toggle */}
@@ -104,6 +173,8 @@ function LandingPageContent() {
           <div className="absolute top-full left-4 right-4 mt-2 bg-white/95 backdrop-blur-xl shadow-2xl rounded-2xl py-4 px-6 flex flex-col gap-4 animate-fade-in border border-slate-200/80 lg:hidden">
             <button suppressHydrationWarning onClick={() => { window.scrollTo(0, 0); setMobileMenuOpen(false); }} className="text-left text-base font-bold text-[#1A1A2E] py-3 border-b border-[#E2E8F0]">Home</button>
             <button suppressHydrationWarning onClick={() => scrollTo('about')} className="text-left text-base font-bold text-[#1A1A2E] py-3 border-b border-[#E2E8F0]">About</button>
+            <button suppressHydrationWarning onClick={() => scrollTo('how-it-works')} className="text-left text-base font-bold text-[#1A1A2E] py-3 border-b border-[#E2E8F0]">Process</button>
+            <button suppressHydrationWarning onClick={() => scrollTo('services')} className="text-left text-base font-bold text-[#1A1A2E] py-3 border-b border-[#E2E8F0]">Services</button>
             <div className="flex flex-col gap-3 mt-2">
               <button suppressHydrationWarning onClick={() => router.push('/client-login')} className="w-full text-left py-3 text-base font-bold text-[#1E8E3E] border-b border-[#E2E8F0]">Client Login</button>
               <button suppressHydrationWarning onClick={() => router.push('/vendor-login')} className="w-full text-left py-3 text-base font-bold text-[#0B5ED7] border-b border-[#E2E8F0]">Vendor Login</button>
@@ -119,78 +190,128 @@ function LandingPageContent() {
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
         <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#1E8E3E] rounded-full blur-[150px] opacity-20 animate-pulse pointer-events-none" />
 
-        <section className="flex w-full relative z-10 flex-col justify-center px-4 sm:px-8 lg:px-20 pt-32 pb-16 lg:py-20 min-h-screen items-center text-center">
+        <section className="flex w-full relative z-10 flex-col lg:flex-row justify-center px-4 sm:px-8 lg:px-20 pt-32 pb-16 lg:py-20 min-h-screen items-center gap-12 lg:gap-20">
 
-          <div className="w-full max-w-[1000px] mx-auto flex flex-col items-center">
+          <div className="w-full max-w-[700px] flex flex-col items-center lg:items-start text-center lg:text-left">
 
             {/* Hero Copy */}
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center lg:items-start">
               {/* Badge */}
-              <span className="inline-block px-5 py-2 bg-white/10 text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] rounded-full mb-8 backdrop-blur-md border border-white/10">
-                Transforming Industrial Waste
-              </span>
+              <motion.span 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="inline-block px-5 py-2 bg-white/10 text-emerald-400 text-[10px] font-black uppercase tracking-[0.3em] rounded-full mb-8 backdrop-blur-md border border-white/10"
+              >
+                India's Most Advanced E-Waste Platform
+              </motion.span>
 
               {/* Headline */}
-              <h1 className="text-[3.5rem] sm:text-[4.5rem] lg:text-[6rem] leading-[1.05] font-headline font-black text-white mb-8 drop-shadow-2xl tracking-tighter">
-                INDIA'S SMART <br /> <span className="text-emerald-400">E-WASTE</span> AUCTION
-              </h1>
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-[2.5rem] sm:text-[3.5rem] lg:text-[4.5rem] leading-[1.1] font-headline font-black text-white mb-8 drop-shadow-2xl tracking-tighter"
+              >
+                INDIA’S SMART <br /> <span className="text-emerald-400">E-WASTE</span> MARKETPLACE
+              </motion.h1>
+
+              {/* Tagline */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="mb-6"
+              >
+                <h2 className="text-xl lg:text-2xl font-bold text-white/90 mb-2">
+                  Transparent. Compliant. Profitable.
+                </h2>
+              </motion.div>
 
               {/* Subtext */}
-              <p className="text-white/70 text-[1.1rem] lg:text-[1.3rem] font-medium leading-relaxed mb-12 max-w-2xl">
-                Transparent bidding, verified recyclers, and full EPR compliance. Sell your scrap at true market value directly on our secure platform.
-              </p>
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-white/70 text-[1.1rem] lg:text-[1.2rem] font-medium leading-relaxed mb-12 max-w-xl"
+              >
+                Manage your e-waste the smart way with audits, bidding, and verified vendors – all in one platform.
+              </motion.p>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-5 mb-16 w-full sm:w-auto">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex flex-col sm:flex-row gap-5 mb-16 w-full sm:w-auto"
+              >
                 <button 
                   onClick={() => router.push('/get-started')}
                   className="group relative px-10 py-5 bg-emerald-600 rounded-2xl text-white font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-emerald-900/40 hover:bg-emerald-500 hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-3"
                 >
                   <span className="material-symbols-outlined text-xl">add_shopping_cart</span>
-                  Post E-Waste
+                  Raise Pickup Request
                 </button>
                 <button 
                   onClick={() => router.push('/get-started')}
                   className="group relative px-10 py-5 bg-white/5 border-2 border-white/20 rounded-2xl text-white font-black text-sm uppercase tracking-[0.2em] hover:bg-white hover:text-slate-900 hover:border-white hover:-translate-y-1 active:scale-95 transition-all flex items-center justify-center gap-3 overflow-hidden"
                 >
                   <span className="material-symbols-outlined text-xl">verified_user</span>
-                  Join as Vendor
+                  Become a Vendor
                 </button>
-              </div>
+              </motion.div>
 
               {/* Trust Indicators */}
-              <div className="flex flex-col sm:flex-row gap-8 sm:gap-12 pt-10 border-t border-white/10 w-full justify-center">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="flex flex-col sm:flex-row gap-8 sm:gap-12 pt-10 border-t border-white/10 w-full justify-center lg:justify-start"
+              >
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-emerald-400 text-[26px]">verified</span>
-                  <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em]">CPCB Authorized Recyclers</span>
+                  <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em]">CPCB Authorized</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-emerald-400 text-[26px]">balance</span>
-                  <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em]">Transparent Live Bidding</span>
+                  <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em]">Transparent Bidding</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-emerald-400 text-[26px]">shield</span>
-                  <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em]">Secure Escrow Payments</span>
+                  <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em]">Secure Payments</span>
                 </div>
-              </div>
+              </motion.div>
             </div>
+          </div>
+
+          {/* Demo Box Component */}
+          <div className="w-full max-w-md lg:max-w-none flex justify-center">
+            <DemoBox />
           </div>
         </section>
       </main>
 
-      {/* 3. VALUE SECTION */}
-      <section className="py-20 px-6 md:px-10 relative z-10 bg-[#FFFFFF] border-b border-[#E2E8F0]">
+      {/* 3. SERVICES SECTION */}
+      <section id="services" className="py-24 px-6 md:px-10 relative z-10 bg-[#FFFFFF] border-b border-[#E2E8F0]">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="text-center mb-16">
+            <h2 className="text-sm font-bold text-[#1E8E3E] uppercase tracking-[0.2em] mb-4">Our Expertise</h2>
+            <h3 className="text-4xl font-headline font-extrabold text-[#1A1A2E]">Comprehensive Services</h3>
+            <div className="w-20 h-1 bg-gradient-to-r from-[#1E8E3E] to-[#0B5ED7] mx-auto mt-6 rounded-full" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {[
-              { icon: "monetization_on", title: "Get Best Price" },
-              { icon: "gavel", title: "Transparent Bidding" },
-              { icon: "workspace_premium", title: "Compliance Certificates" },
-              { icon: "local_shipping", title: "Hassle-Free Pickup" }
-            ].map((val, i) => (
-              <div key={i} className="bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_4px_16px_rgba(0,0,0,0.06)] rounded-[16px] p-8 text-center flex flex-col items-center justify-center hover:-translate-y-1 transition-transform">
-                <span className="material-symbols-outlined text-[40px] text-[#1E8E3E] mb-4">{val.icon}</span>
-                <h3 className="text-lg font-bold text-[#1A1A2E] tracking-wide">{val.title}</h3>
+              { icon: "corporate_fare", title: "Corporate E-Waste Disposal", desc: "Enterprise-grade disposal solutions for large organizations." },
+              { icon: "devices", title: "IT Asset Recycling", desc: "Safe and secure recycling of computers, servers, and mobile devices." },
+              { icon: "battery_charging_full", title: "Battery Disposal", desc: "Environmentally friendly disposal of industrial and consumer batteries." },
+              { icon: "gavel", title: "Scrap Auction", desc: "Maximize value through our transparent competitive bidding system." },
+              { icon: "verified", title: "Compliance Management", desc: "End-to-end documentation and regulatory reporting." }
+            ].map((service, i) => (
+              <div key={i} className="bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_4px_16px_rgba(0,0,0,0.04)] rounded-[20px] p-8 flex flex-col items-center text-center group hover:border-emerald-500 transition-all hover:-translate-y-1">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6 group-hover:bg-emerald-500 transition-colors">
+                  <span className="material-symbols-outlined text-3xl text-emerald-600 group-hover:text-white transition-colors">{service.icon}</span>
+                </div>
+                <h4 className="font-bold text-[#1A1A2E] mb-3 leading-tight">{service.title}</h4>
+                <p className="text-xs text-[#4A5568] leading-relaxed">{service.desc}</p>
               </div>
             ))}
           </div>
@@ -198,40 +319,73 @@ function LandingPageContent() {
       </section>
 
       {/* 4. ABOUT SECTION */}
-      <section id="about" className="py-24 px-6 md:px-10 relative z-10 bg-[#F5F7FA] dark:bg-slate-950">
+      <section id="about" className="py-24 px-6 md:px-10 relative z-10 bg-[#0f172a] dark:bg-slate-950">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-sm font-bold text-[#1E8E3E] uppercase tracking-[0.2em] mb-4">Our Vision</h2>
-            <h3 className="text-4xl font-headline font-extrabold text-[#1A1A2E]">About Us</h3>
-            <div className="w-20 h-1 bg-gradient-to-r from-[#1E8E3E] to-[#0B5ED7] mx-auto mt-6 rounded-full" />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
             <div>
-              <p className="text-xl text-[#1A1A2E] leading-relaxed font-medium">
-                <span className="text-[#1E8E3E] font-extrabold">We Connect</span> is a digital e-waste aggregator platform that connects corporates, manufacturers, and individuals with authorized recyclers through a transparent auction system.
+              <h2 className="text-sm font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Who We Are</h2>
+              <h3 className="text-4xl font-headline font-extrabold text-white mb-8 leading-tight">India’s Trusted E-Waste Bridge</h3>
+              <p className="text-xl text-slate-100 leading-relaxed font-medium mb-6">
+                At <span className="text-emerald-400 font-extrabold">We Connect</span>, we are building a smarter and more transparent ecosystem for responsible e-waste management across India.
               </p>
-              <p className="mt-6 text-[#4A5568] leading-relaxed">
-                By bridging the gap between waste generators and certified processors, we ensure that electronic waste is handled responsibly while maximizing value for all stakeholders.
+              <p className="text-slate-400 leading-relaxed mb-10">
+                We act as a trusted bridge between organizations generating e-waste and authorized recyclers, ensuring seamless disposal, compliance, and value realization — all through a single digital platform.
               </p>
+
+              <div className="grid sm:grid-cols-2 gap-6">
+                <div className="bg-white/5 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-white/10">
+                  <h4 className="text-emerald-400 font-bold mb-2 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">rocket_launch</span> Mission
+                  </h4>
+                  <p className="text-xs text-slate-300 leading-relaxed">To create a scalable and compliant e-waste ecosystem that helps organizations dispose responsibly while maximizing value recovery.</p>
+                </div>
+                <div className="bg-white/5 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-white/10">
+                  <h4 className="text-blue-400 font-bold mb-2 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">visibility</span> Vision
+                  </h4>
+                  <p className="text-xs text-slate-300 leading-relaxed">To become India’s most trusted e-waste aggregator platform, driving sustainability through technology, transparency, and accountability.</p>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
-              {[
-                { title: "Maximize scrap value", desc: "Our competitive bidding process ensures you get the best market price for your electronic waste.", icon: "trending_up" },
-                { title: "Ensure legal compliance", desc: "Full documentation and tracking to meet CPCB and state regulatory requirements.", icon: "gavel" },
-                { title: "Provide end-to-end tracking", desc: "Real-time visibility from pickup to final disposal with verified certificates.", icon: "track_changes" }
-              ].map((point, i) => (
-                <div key={i} className="flex gap-5 p-6 bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_4px_16px_rgba(0,0,0,0.06)] rounded-[16px] group hover:border-[#1E8E3E] transition-colors">
-                  <div className="w-12 h-12 rounded-xl bg-[#E8F5E9] flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[#1E8E3E]">{point.icon}</span>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-[#1A1A2E] mb-1">{point.title}</h4>
-                    <p className="text-sm text-[#4A5568] leading-relaxed">{point.desc}</p>
-                  </div>
+            <div className="space-y-8">
+              <div className="bg-emerald-600 text-white p-8 rounded-[2.5rem] shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <span className="material-symbols-outlined text-[120px]">handshake</span>
                 </div>
-              ))}
+                <h4 className="text-xl font-bold mb-6 relative z-10">What We Do</h4>
+                <ul className="space-y-4 relative z-10">
+                  {[
+                    "Corporates, hospitals, manufacturers can easily raise disposal requests",
+                    "Verified vendors conduct audits, pickups, and recycling",
+                    "Structured bidding ensures best price & full transparency",
+                    "Digital management of all compliance documents"
+                  ].map((item, i) => (
+                    <li key={i} className="flex gap-3 text-sm font-medium text-white">
+                      <span className="material-symbols-outlined text-emerald-300">check_circle</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="bg-white/5 backdrop-blur-sm p-8 rounded-[2.5rem] border border-white/10 shadow-sm">
+                <h4 className="text-xl font-bold text-white mb-6">Our Role in the Ecosystem</h4>
+                <div className="grid gap-4">
+                  {[
+                    { icon: "link", text: "Connects verified clients with authorized vendors" },
+                    { icon: "fact_check", text: "Enables audit-based evaluation before disposal" },
+                    { icon: "gavel", text: "Introduces sealed and open bidding for fair pricing" },
+                    { icon: "verified_user", text: "Ensures complete compliance with regulations" },
+                    { icon: "track_changes", text: "Tracks every stage from request to certification" }
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-4 p-3 hover:bg-white/5 rounded-xl transition-colors text-white">
+                      <span className="material-symbols-outlined text-emerald-400 text-[20px]">{item.icon}</span>
+                      <span className="text-xs font-bold text-slate-200">{item.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -241,181 +395,249 @@ function LandingPageContent() {
       <section id="how-it-works" className="py-24 px-6 md:px-10 relative z-10 bg-[#FFFFFF]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-sm font-bold text-[#1E8E3E] uppercase tracking-[0.2em] mb-4">Process</h2>
+            <h2 className="text-sm font-bold text-[#1E8E3E] uppercase tracking-[0.2em] mb-4">The Process</h2>
             <h3 className="text-4xl font-headline font-extrabold text-[#1A1A2E]">How It Works</h3>
             <div className="w-20 h-1 bg-gradient-to-r from-[#1E8E3E] to-[#0B5ED7] mx-auto mt-6 rounded-full" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 relative mt-12">
-            <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-[#1E8E3E] to-[#0B5ED7] z-0"></div>
-
-            {[
-              { step: "01", title: "Upload Your Scrap", desc: "List your e-waste with specs, quantity, condition, and photos for maximum buyer visibility.", icon: "upload_file", tag: "Takes 5 minutes" },
-              { step: "02", title: "Vendors Bidding", desc: "Verified recyclers submit confidential bids, ensuring fair, market-driven pricing.", icon: "gavel", tag: "24-48 hour window" },
-              { step: "03", title: "Live Auction", desc: "Top bidders compete in a live, transparent auction with real-time tracking and auto-extension.", icon: "sensors", tag: "Live & Transparent" },
-              { step: "04", title: "Pickup & Payment", desc: "The winning vendor handles pickup while you track it, with secure payment processing.", icon: "local_shipping", tag: "Fully Tracked" },
-              { step: "05", title: "Certification", desc: "Get compliant recycling certificates and e-waste documentation, downloadable anytime.", icon: "workspace_premium", tag: "Legally Valid" }
-            ].map((item, i) => (
-              <div key={i} className="relative z-10 flex flex-col items-center text-center group bg-[#FFFFFF] border border-[#E2E8F0] shadow-[0_4px_16px_rgba(0,0,0,0.06)] rounded-[16px] p-6 hover:-translate-y-2 hover:border-[#1E8E3E] transition-all">
-                <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-full flex items-center justify-center mb-6 shadow-md bg-gradient-to-br from-[#1E8E3E] to-[#0B5ED7] group-hover:shadow-[0_0_20px_rgba(30,142,62,0.4)] transition-all duration-300">
-                  <span className="material-symbols-outlined text-[32px] lg:text-[40px] text-white">{item.icon}</span>
+          <div className="relative">
+            {/* Connection Line */}
+            <div className="hidden lg:block absolute top-[60px] left-[50px] right-[50px] h-0.5 bg-slate-100" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-6">
+              {[
+                { step: "01", title: "Upload Requirement", icon: "upload_file" },
+                { step: "02", title: "Vendor Audit", icon: "person_search" },
+                { step: "03", title: "Sealed Bidding", icon: "lock" },
+                { step: "04", title: "Live Auction", icon: "sensors" },
+                { step: "05", title: "Final Quote", icon: "description" },
+                { step: "06", title: "Payment", icon: "payments" },
+                { step: "07", title: "Pickup & Compliance", icon: "local_shipping" }
+              ].map((item, i) => (
+                <div key={i} className="relative flex flex-col items-center text-center group">
+                  <div className="w-20 h-20 rounded-2xl bg-white border-2 border-slate-100 flex items-center justify-center mb-6 shadow-sm group-hover:border-emerald-500 group-hover:shadow-lg transition-all relative z-10">
+                    <span className="material-symbols-outlined text-3xl text-slate-400 group-hover:text-emerald-600 transition-colors">{item.icon}</span>
+                    <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-emerald-600 text-white text-[10px] font-black flex items-center justify-center border-4 border-white">
+                      {item.step}
+                    </div>
+                  </div>
+                  <h4 className="font-bold text-[#1A1A2E] text-xs leading-tight">{item.title}</h4>
                 </div>
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#1E8E3E] text-white font-bold text-sm mb-4 border-2 border-white shadow-sm">
-                  {item.step}
-                </div>
-                <h4 className="font-bold text-[#1A1A2E] text-lg tracking-wide mb-3">{item.title}</h4>
-                <p className="text-sm text-[#4A5568] leading-relaxed mb-4">{item.desc}</p>
-                <span className="mt-auto px-3 py-1 bg-[#E8F5E9] text-[#1E8E3E] font-bold text-xs uppercase rounded-full">{item.tag}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* 6. FOR CLIENTS & VENDORS */}
-      <section className="py-20 px-6 md:px-10 relative z-10 bg-[#F5F7FA] dark:bg-slate-950">
+      <section className="py-24 px-6 md:px-10 relative z-10 bg-[#F5F7FA] dark:bg-slate-950">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 lg:gap-12">
 
           {/* For Clients */}
-          <div className="bg-[#FFFFFF] border-l-4 border-l-[#1E8E3E] shadow-[0_4px_16px_rgba(0,0,0,0.06)] rounded-r-[16px] rounded-l-[4px] p-10 lg:p-12 flex flex-col hover:-translate-y-1 transition-transform">
+          <div className="bg-[#FFFFFF] border-t-4 border-t-[#1E8E3E] shadow-[0_10px_40px_rgba(0,0,0,0.05)] rounded-[2.5rem] p-10 lg:p-12 flex flex-col hover:-translate-y-1 transition-transform relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-5">
+              <span className="material-symbols-outlined text-[100px] text-[#1E8E3E]">corporate_fare</span>
+            </div>
             <span className="material-symbols-outlined text-[48px] text-[#1E8E3E] mb-4">corporate_fare</span>
-            <h3 className="text-3xl font-headline font-extrabold text-[#1A1A2E] mb-2 tracking-tight">For Clients & Corporates</h3>
-            <p className="text-[#4A5568] font-medium mb-8">Maximize returns on your e-waste disposal</p>
+            <h3 className="text-3xl font-headline font-extrabold text-[#1A1A2E] mb-2 tracking-tight">For Clients</h3>
+            <p className="text-[#4A5568] font-medium mb-8 uppercase text-[10px] tracking-[0.2em]">Maximize returns on disposal</p>
 
-            <ul className="space-y-6 mb-12">
-              <li className="flex gap-4">
-                <span className="material-symbols-outlined text-[#1E8E3E] text-[24px] shrink-0 mt-1">trending_up</span>
-                <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <strong className="text-[#1A1A2E] text-lg">Higher Revenue (5–20% More)</strong>
-                    <span className="px-2 py-0.5 bg-[#E8F5E9] text-[#1E8E3E] text-[10px] font-bold uppercase rounded-full">#1 Benefit</span>
-                  </div>
-                  <span className="text-sm text-[#4A5568] leading-relaxed block">Our competitive bidding model consistently delivers 5–20% higher returns compared to traditional scrap dealers. Let the market set the price — not a middleman.</span>
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="material-symbols-outlined text-[#1E8E3E] text-[24px] shrink-0 mt-1">assignment</span>
-                <div>
-                  <strong className="text-[#1A1A2E] text-lg mb-1 block">Easy Auction Creation</strong>
-                  <span className="text-sm text-[#4A5568] leading-relaxed block">Create a fully detailed auction listing in under 5 minutes. Add material specs, photos, reserve price, and pickup availability. Our guided form makes it effortless.</span>
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="material-symbols-outlined text-[#1E8E3E] text-[24px] shrink-0 mt-1">location_on</span>
-                <div>
-                  <strong className="text-[#1A1A2E] text-lg mb-1 block">Full Real-Time Tracking</strong>
-                  <span className="text-sm text-[#4A5568] leading-relaxed block">Track every stage — from bid submission to pickup completion. Get instant notifications and live status updates throughout the entire process.</span>
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="material-symbols-outlined text-[#1E8E3E] text-[24px] shrink-0 mt-1">download</span>
-                <div>
-                  <strong className="text-[#1A1A2E] text-lg mb-1 block">Download Compliance Certificates</strong>
-                  <span className="text-sm text-[#4A5568] leading-relaxed block">Instantly download legally valid e-waste recycling certificates for every completed auction. Stay audit-ready with organized disposal documentation.</span>
-                </div>
-              </li>
+            <ul className="space-y-4 mb-12 flex-grow">
+              {[
+                { title: "Raise pickup requests", icon: "add_task" },
+                { title: "Track status in real-time", icon: "route" },
+                { title: "Get best price via bidding", icon: "trending_up" },
+                { title: "Download compliance certificates", icon: "verified" }
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl">
+                  <span className="material-symbols-outlined text-emerald-600 text-[20px]">{item.icon}</span>
+                  <span className="text-sm font-bold text-slate-700">{item.title}</span>
+                </li>
+              ))}
             </ul>
-            <button suppressHydrationWarning onClick={() => router.push('/client-login')} className="mt-auto w-full btn-primary font-bold text-[15px] tracking-widest uppercase py-4">
-              Post Your Scrap Today
+            <button suppressHydrationWarning onClick={() => router.push('/client-login')} className="w-full bg-emerald-600 text-white font-black text-xs uppercase tracking-widest py-5 rounded-2xl shadow-lg shadow-emerald-900/20 hover:bg-emerald-500 transition-all">
+              Raise Pickup Request
             </button>
           </div>
 
           {/* For Vendors */}
-          <div className="bg-[#FFFFFF] border-l-4 border-l-[#0B5ED7] shadow-[0_4px_16px_rgba(0,0,0,0.06)] rounded-r-[16px] rounded-l-[4px] p-10 lg:p-12 flex flex-col hover:-translate-y-1 transition-transform">
+          <div className="bg-[#FFFFFF] border-t-4 border-t-[#0B5ED7] shadow-[0_10px_40px_rgba(0,0,0,0.05)] rounded-[2.5rem] p-10 lg:p-12 flex flex-col hover:-translate-y-1 transition-transform relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-5">
+              <span className="material-symbols-outlined text-[100px] text-[#0B5ED7]">local_shipping</span>
+            </div>
             <span className="material-symbols-outlined text-[48px] text-[#0B5ED7] mb-4">local_shipping</span>
-            <h3 className="text-3xl font-headline font-extrabold text-[#1A1A2E] mb-2 tracking-tight">For Vendors & Recyclers</h3>
-            <p className="text-[#4A5568] font-medium mb-8">Grow your recycling business sustainably</p>
+            <h3 className="text-3xl font-headline font-extrabold text-[#1A1A2E] mb-2 tracking-tight">For Vendors</h3>
+            <p className="text-[#4A5568] font-medium mb-8 uppercase text-[10px] tracking-[0.2em]">Grow your recycling business</p>
 
-            <ul className="space-y-6 mb-12">
-              <li className="flex gap-4">
-                <span className="material-symbols-outlined text-[#0B5ED7] text-[24px] shrink-0 mt-1">inventory_2</span>
-                <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <strong className="text-[#1A1A2E] text-lg">Access to Bulk Verified Scrap</strong>
-                    <span className="px-2 py-0.5 bg-[#E3EEFF] text-[#0B5ED7] text-[10px] font-bold uppercase rounded-full">Verified Listings</span>
-                  </div>
-                  <span className="text-sm text-[#4A5568] leading-relaxed block">Browse a curated marketplace of genuine bulk e-waste listings from IT companies, manufacturers, corporates, and institutions. All listings are verified — no fake postings.</span>
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="material-symbols-outlined text-[#0B5ED7] text-[24px] shrink-0 mt-1">gavel</span>
-                <div>
-                  <strong className="text-[#1A1A2E] text-lg mb-1 block">Fair & Transparent Bidding</strong>
-                  <span className="text-sm text-[#4A5568] leading-relaxed block">Participate in a regulated, tamper-proof bidding system. Sealed bids prevent collusion, live auction rounds ensure transparency, and EMD deposits confirm serious buyers.</span>
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="material-symbols-outlined text-[#0B5ED7] text-[24px] shrink-0 mt-1">trending_up</span>
-                <div>
-                  <strong className="text-[#1A1A2E] text-lg mb-1 block">Business Growth Opportunities</strong>
-                  <span className="text-sm text-[#4A5568] leading-relaxed block">Build your brand reputation through our rating and review system. Access a consistent pipeline of materials, expand your geographic reach, and scale your operations.</span>
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="material-symbols-outlined text-[#0B5ED7] text-[24px] shrink-0 mt-1">shield</span>
-                <div>
-                  <strong className="text-[#1A1A2E] text-lg mb-1 block">Secure Transaction Processing</strong>
-                  <span className="text-sm text-[#4A5568] leading-relaxed block">All payments are processed through our secure escrow system. Earnest Money Deposits protect both parties. No payment disputes — just smooth, reliable transactions.</span>
-                </div>
-              </li>
+            <ul className="space-y-4 mb-12 flex-grow">
+              {[
+                { title: "Access verified leads", icon: "verified" },
+                { title: "Participate in bidding", icon: "gavel" },
+                { title: "Manage pickups seamlessly", icon: "inventory" },
+                { title: "Earn consistently", icon: "payments" }
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-4 p-3 bg-slate-50 rounded-xl">
+                  <span className="material-symbols-outlined text-blue-600 text-[20px]">{item.icon}</span>
+                  <span className="text-sm font-bold text-slate-700">{item.title}</span>
+                </li>
+              ))}
             </ul>
-            <button suppressHydrationWarning onClick={() => router.push('/vendor-login')} className="mt-auto w-full btn-secondary font-bold text-[15px] tracking-widest uppercase py-4">
-              Join as Vendor Today
+            <button suppressHydrationWarning onClick={() => router.push('/vendor-login')} className="w-full bg-blue-600 text-white font-black text-xs uppercase tracking-widest py-5 rounded-2xl shadow-lg shadow-blue-900/20 hover:bg-blue-500 transition-all">
+              Become a Vendor
             </button>
           </div>
         </div>
       </section>
 
-      {/* 7. TRUST */}
-      <section className="py-24 px-6 md:px-10 relative z-10 bg-[#FFFFFF]">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <h3 className="text-4xl font-headline font-extrabold text-[#1A1A2E]">Trust & Security</h3>
-            <div className="w-20 h-1 bg-gradient-to-r from-[#1E8E3E] to-[#0B5ED7] mx-auto mt-6 rounded-full" />
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { title: "Verified vendors", icon: "verified_user" },
-              { title: "Secure platform", icon: "security" },
-              { title: "Compliance-driven", icon: "rule" }
-            ].map((feat, i) => (
-              <div key={i} className="bg-[#F5F7FA] border border-[#E2E8F0] shadow-[0_4px_16px_rgba(0,0,0,0.06)] rounded-[16px] p-10 text-center flex flex-col items-center justify-center hover:-translate-y-1 transition-transform dark:bg-slate-950">
-                <span className="material-symbols-outlined text-[48px] text-[#1E8E3E] mb-6">{feat.icon}</span>
-                <h4 className="font-bold text-[#1A1A2E] text-xl">{feat.title}</h4>
+      {/* 7. WHY CHOOSE SECTION */}
+      <section className="py-24 px-6 md:px-10 relative z-10 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="relative">
+              <div className="absolute -top-10 -left-10 w-40 h-40 bg-emerald-100 rounded-full blur-3xl opacity-50" />
+              <img 
+                src="https://images.unsplash.com/photo-1591405351990-4726e331f141?auto=format&fit=crop&q=80&w=800" 
+                alt="E-Waste Recycling" 
+                className="rounded-[3rem] shadow-2xl relative z-10 object-cover aspect-square"
+              />
+              <div className="absolute -bottom-6 -right-6 bg-emerald-600 text-white p-8 rounded-[2rem] shadow-xl z-20">
+                <span className="text-4xl font-black block">100%</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest">Compliant Process</span>
               </div>
-            ))}
+            </div>
+
+            <div>
+              <h2 className="text-sm font-bold text-[#1E8E3E] uppercase tracking-[0.2em] mb-4">The Advantage</h2>
+              <h3 className="text-4xl font-headline font-extrabold text-[#1A1A2E] mb-8 leading-tight">Why Choose We Connect</h3>
+              
+              <div className="grid gap-6">
+                {[
+                  { title: "End-to-end digital process", icon: "settings_suggest" },
+                  { title: "Transparent pricing through auction model", icon: "analytics" },
+                  { title: "Verified vendor network", icon: "group_add" },
+                  { title: "Real-time tracking and updates", icon: "update" },
+                  { title: "Centralized document management", icon: "folder_managed" },
+                  { title: "Dedicated support for every transaction", icon: "support_agent" }
+                ].map((item, i) => (
+                  <div key={i} className="flex gap-4 group">
+                    <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-500 transition-colors">
+                      <span className="material-symbols-outlined text-emerald-600 text-[18px] group-hover:text-white transition-colors">{item.icon}</span>
+                    </div>
+                    <p className="text-slate-700 font-bold self-center">{item.title}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* 8. CTA */}
-      <section className="py-24 px-6 md:px-10 relative z-10 bg-[#E8F5E9] border-t border-[#E2E8F0]">
-        <div className="max-w-4xl mx-auto text-center bg-[#FFFFFF] shadow-[0_10px_40px_rgba(0,0,0,0.12)] p-12 lg:p-20 rounded-[3rem] border border-[#E2E8F0] relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#E8F5E9] to-transparent pointer-events-none" />
-          <h2 className="relative z-10 text-[2.5rem] md:text-[3.5rem] font-headline font-extrabold text-[#1A1A2E] mb-8 leading-tight tracking-tight">
-            Start Selling Your <br />E-Waste Today
-          </h2>
-          <div className="relative z-10 flex flex-col sm:flex-row gap-6 justify-center">
-            <button suppressHydrationWarning onClick={() => router.push('/get-started')} className="btn-primary font-black text-xs uppercase tracking-widest px-8 h-12 shadow-lg shadow-emerald-700/20 active:scale-95 transition-all">
-              Get Started
-            </button>
+      {/* 8. CONTACT SECTION */}
+      <section id="contact" className="py-24 px-6 md:px-10 relative z-10 bg-[#F5F7FA] dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-[#1A1A2E] rounded-[3rem] overflow-hidden shadow-2xl flex flex-col lg:flex-row">
+            <div className="p-12 lg:p-20 flex-grow">
+              <h2 className="text-sm font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Get In Touch</h2>
+              <h3 className="text-4xl font-headline font-extrabold text-white mb-12">Let's build a greener <br />future together</h3>
+              
+              <div className="space-y-8">
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                    <span className="material-symbols-outlined text-emerald-400">mail</span>
+                  </div>
+                  <div>
+                    <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Email Us</p>
+                    <p className="text-white font-bold text-lg">support@weconnect.com</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                    <span className="material-symbols-outlined text-emerald-400">call</span>
+                  </div>
+                  <div>
+                    <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Call Us</p>
+                    <p className="text-white font-bold text-lg">+91-XXXXXXXXXX</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
+                    <span className="material-symbols-outlined text-emerald-400">location_on</span>
+                  </div>
+                  <div>
+                    <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Location</p>
+                    <p className="text-white font-bold text-lg">Bangalore, India</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="lg:w-1/3 bg-emerald-600 p-12 lg:p-20 flex flex-col justify-center text-center">
+              <span className="material-symbols-outlined text-white text-[80px] mb-8 opacity-20">recycling</span>
+              <h4 className="text-2xl font-black text-white mb-6">"Where Waste Becomes Value"</h4>
+              <p className="text-emerald-100 font-medium leading-relaxed mb-10">Join India's most advanced e-waste platform and start your journey towards responsible disposal.</p>
+              <button onClick={() => router.push('/get-started')} className="w-full bg-white text-emerald-600 font-black text-xs uppercase tracking-widest py-5 rounded-2xl shadow-xl hover:bg-slate-50 transition-all">
+                Get Started Now
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      <footer className="py-12 px-6 md:px-10 bg-[#1A1A2E] text-[rgba(255,255,255,0.8)] border-t-[3px] border-t-[#1E8E3E]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-xl dark:bg-slate-900" onClick={() => window.scrollTo(0, 0)}>
-            <img src="/logo%202.png" alt="We Connect" className="h-[36px] object-contain" />
+      <footer className="py-20 px-6 md:px-10 bg-[#0f172a] text-slate-400 border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-2 cursor-pointer mb-8" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
+                <img src="/logo%203.png" alt="We Connect" className="h-[70px] object-contain" />
+              </div>
+              <p className="text-sm leading-relaxed max-w-sm mb-8">
+                India’s leading digital e-waste marketplace connecting authorized recyclers with organizations for transparent, compliant, and profitable disposal.
+              </p>
+              <div className="flex gap-4">
+                {[
+                  { icon: 'public', label: 'Website' },
+                  { icon: 'mail', label: 'Email' },
+                  { icon: 'call', label: 'Phone' },
+                  { icon: 'distance', label: 'Network' }
+                ].map(social => (
+                  <div key={social.label} title={social.label} className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-emerald-600 hover:border-emerald-600 transition-all cursor-pointer">
+                    <span className="material-symbols-outlined text-[18px] text-white">{social.icon}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-white font-bold uppercase tracking-widest text-xs mb-8">Quick Links</h4>
+              <ul className="space-y-4">
+                {['Home', 'About Us', 'How It Works', 'Services', 'Contact'].map(item => (
+                  <li key={item}>
+                    <button onClick={() => scrollTo(item.toLowerCase().replace(/ /g, '-'))} className="text-sm hover:text-emerald-400 transition-colors">{item}</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-bold uppercase tracking-widest text-xs mb-8">Legal & Policy</h4>
+              <ul className="space-y-4">
+                {['Privacy Policy', 'Terms of Service', 'E-Waste Policy', 'Compliance'].map(item => (
+                  <li key={item}>
+                    <button className="text-sm hover:text-emerald-400 transition-colors">{item}</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-          <p className="text-[12px] uppercase tracking-widest font-medium">
-            © 2026 We Connect Vendors LLP. All Rights Reserved.
-          </p>
-          <div className="flex gap-6">
-            {["Privacy", "Terms", "Contact"].map(item => (
-              <button key={item} className="text-[12px] uppercase tracking-widest font-bold text-[rgba(255,255,255,0.6)] hover:text-[#1E8E3E] transition-colors">{item}</button>
-            ))}
+
+          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-[10px] uppercase tracking-widest font-bold">
+              © 2026 We Connect Vendors LLP. All Rights Reserved.
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] uppercase tracking-widest font-bold text-white">System Status: Operational</span>
+            </div>
           </div>
         </div>
       </footer>
